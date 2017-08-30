@@ -7,7 +7,21 @@ val macwire = "com.softwaremill.macwire" %% "macros" % "2.2.5" % "provided"
 val scalaTest = "org.scalatest" %% "scalatest" % "3.0.1" % Test
 
 lazy val `dabanshan` = (project in file("."))
-  .aggregate(`catalog-api`, `catalog-impl`)
+  .aggregate(`user-api`, `product-api`, `catalog-api`, `catalog-impl`)
+
+lazy val `user-api` = (project in file("user-api"))
+  .settings(
+    libraryDependencies ++= Seq(
+      lagomScaladslApi
+    )
+  )
+
+lazy val `product-api` = (project in file("product-api"))
+  .settings(
+    libraryDependencies ++= Seq(
+      lagomScaladslApi
+    )
+  )
 
 lazy val `catalog-api` = (project in file("catalog-api"))
   .settings(

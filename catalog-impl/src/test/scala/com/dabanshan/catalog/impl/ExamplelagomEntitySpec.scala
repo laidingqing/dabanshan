@@ -1,4 +1,4 @@
-package com.example.hello.impl
+package com.dabanshan.catalog.impl
 
 import akka.actor.ActorSystem
 import akka.testkit.TestKit

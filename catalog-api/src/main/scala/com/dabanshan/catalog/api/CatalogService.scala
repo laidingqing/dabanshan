@@ -1,4 +1,4 @@
-package com.example.hello.api
+package com.dabanshan.catalog.api
 
 import akka.{Done, NotUsed}
 import com.lightbend.lagom.scaladsl.api.broker.Topic
@@ -6,17 +6,11 @@ import com.lightbend.lagom.scaladsl.api.broker.kafka.{KafkaProperties, Partition
 import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
 import play.api.libs.json.{Format, Json}
 
-object ExamplelagomService  {
-  val TOPIC_NAME = "greetings"
+object CatalogService  {
+  val TOPIC_NAME = "catalogs"
 }
 
-/**
-  * The example-lagom service interface.
-  * <p>
-  * This describes everything that Lagom needs to know about how to serve and
-  * consume the ExamplelagomService.
-  */
-trait ExamplelagomService extends Service {
+trait CatalogService extends Service {
 
   /**
     * Example: curl http://localhost:9000/api/hello/Alice
@@ -44,12 +38,7 @@ trait ExamplelagomService extends Service {
         pathCall("/api/hello/:id", useGreeting _)
       )
       .withTopics(
-        topic(ExamplelagomService.TOPIC_NAME, greetingsTopic _)
-          // Kafka partitions messages, messages within the same partition will
-          // be delivered in order, to ensure that all messages for the same user
-          // go to the same partition (and hence are delivered in order with respect
-          // to that user), we configure a partition key strategy that extracts the
-          // name as the partition key.
+        topic(CatalogService.TOPIC_NAME, greetingsTopic _)
           .addProperty(
             KafkaProperties.partitionKeyStrategy,
             PartitionKeyStrategy[GreetingMessageChanged](_.name)

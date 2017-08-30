@@ -1,9 +1,9 @@
-package com.example.hello.impl
+package com.dabanshan.catalog.impl
 
+import com.dabanshan.catalog.api.{CatalogService, GreetingMessage}
 import com.lightbend.lagom.scaladsl.server.LocalServiceLocator
 import com.lightbend.lagom.scaladsl.testkit.ServiceTest
 import org.scalatest.{AsyncWordSpec, BeforeAndAfterAll, Matchers}
-import com.example.hello.api._
 
 class ExamplelagomServiceSpec extends AsyncWordSpec with Matchers with BeforeAndAfterAll {
 
@@ -14,7 +14,7 @@ class ExamplelagomServiceSpec extends AsyncWordSpec with Matchers with BeforeAnd
     new ExamplelagomApplication(ctx) with LocalServiceLocator
   }
 
-  val client = server.serviceClient.implement[ExamplelagomService]
+  val client = server.serviceClient.implement[CatalogService]
 
   override protected def afterAll() = server.stop()
 
