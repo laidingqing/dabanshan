@@ -32,16 +32,17 @@ class UserEventProcessor(session: CassandraSession, readSide: CassandraReadSide)
     UserEvent.Tag.allTags
 
   private def insertUser(user: UserCreated) = {
-    Future.successful(immutable.Seq(insertUserForEmailStatement.bind(user.userId, user.email)))
+    Future.successful(immutable.Seq(insertUserForEmailStatement.bind(user.userId, user.email, user.password)))
   }
 
   private def createTables() = {
     for {
       _ <- session.executeCreateTable(
         """
-          |CREATE TABLE IF NOT EXISTS userByEmail (
-          |  userId text,
-          |  email text PRIMARY KEY
+          |CREATE TABLE IF NOT EXISTS users (
+          |  userId text PRIMARY KEY,
+          |  email text,
+          |  password text
           |  )
         """.stripMargin)
     } yield Done
@@ -51,10 +52,11 @@ class UserEventProcessor(session: CassandraSession, readSide: CassandraReadSide)
     for {
       insertUserForEmail <- session.prepare(
         """
-          |INSERT INTO userByEmail(
+          |INSERT INTO users(
           |  userId,
-          |  email
-          |) VALUES (?, ?)
+          |  email,
+          |  password
+          |) VALUES (?, ?, ?)
         """.stripMargin)
     } yield {
       insertUserForEmailStatement = insertUserForEmail

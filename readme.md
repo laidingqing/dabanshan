@@ -2,7 +2,8 @@
 
 ## framework
 
-* using lagom framework by scala.
+* using lagom(scals) framework as microservice infrastructure.
+* using CQRS/ES design pattern, @see https://blog.codecentric.de/en/2017/02/cqrs-event-sourcing-lagom/
 
 ## structure
 
@@ -20,4 +21,6 @@
 ## how run ?
 
 * use "sbt runAll" run a serviceLocator, a Gateway and embed Cassandra and embed Kafka.
-* standalone command - @see lagom website
+* standalone command - lagomServiceLocatorStart/lagomCassandraStart
+* Service locator is running at http://localhost:8000
+* Service gateway is running at http://localhost:9000

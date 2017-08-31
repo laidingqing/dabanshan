@@ -3,19 +3,31 @@ version in ThisBuild := "1.0"
 
 scalaVersion in ThisBuild := "2.11.8"
 
+val playJsonDerivedCodecs = "org.julienrf" %% "play-json-derived-codecs" % "3.3"
 val macwire = "com.softwaremill.macwire" %% "macros" % "2.2.5" % "provided"
 val scalaTest = "org.scalatest" %% "scalatest" % "3.0.1" % Test
 
-lazy val `dabanshan` = (project in file("."))
-  .aggregate(`user-api`, `user-impl`, `product-api`, `catalog-api`, `catalog-impl`)
+lazy val root = (project in file("."))
+  .aggregate(webGateway, commons, userApi, userImpl, productApi, catalogApi, catalogImpl)
 
-lazy val `user-api` = (project in file("user-api"))
+lazy val commons = (project in file("commons"))
+  .settings(commonSettings: _*)
+  .settings(
+    libraryDependencies ++= Seq(
+      lagomScaladslApi,
+      lagomScaladslServer % Optional,
+      playJsonDerivedCodecs,
+      scalaTest
+    )
+  )
+
+lazy val userApi = (project in file("user-api"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslApi
     )
   )
-lazy val `user-impl` = (project in file("user-impl"))
+lazy val userImpl = (project in file("user-impl"))
   .enablePlugins(LagomScala)
   .settings(
     libraryDependencies ++= Seq(
@@ -27,23 +39,23 @@ lazy val `user-impl` = (project in file("user-impl"))
     )
   )
   .settings(lagomForkedTestSettings: _*)
-  .dependsOn(`user-api`)
+  .dependsOn(userApi, commons)
 
-lazy val `product-api` = (project in file("product-api"))
+lazy val productApi = (project in file("product-api"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslApi
     )
   )
 
-lazy val `catalog-api` = (project in file("catalog-api"))
+lazy val catalogApi = (project in file("catalog-api"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslApi
     )
   )
 
-lazy val `catalog-impl` = (project in file("catalog-impl"))
+lazy val catalogImpl = (project in file("catalog-impl"))
   .enablePlugins(LagomScala)
   .settings(
     libraryDependencies ++= Seq(
@@ -55,4 +67,23 @@ lazy val `catalog-impl` = (project in file("catalog-impl"))
     )
   )
   .settings(lagomForkedTestSettings: _*)
-  .dependsOn(`catalog-api`)
+  .dependsOn(catalogApi)
+
+
+lazy val webGateway = (project in file("web-gateway"))
+  .enablePlugins(PlayScala, LagomPlay)
+  .dependsOn(userApi)
+  .settings(
+    routesGenerator := InjectedRoutesGenerator,
+    libraryDependencies ++= Seq(
+      lagomScaladslServer,
+      macwire,
+      scalaTest,
+      "org.webjars" % "react" % "0.14.3",
+      "org.webjars" % "react-router" % "1.0.3",
+      "org.webjars" % "foundation" % "5.3.0"
+    )
+  )
+
+def commonSettings: Seq[Setting[_]] = Seq(
+)
