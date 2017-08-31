@@ -1,5 +1,7 @@
 package com.dabanshan.user.api
 
+import java.util.UUID
+
 import akka.{Done, NotUsed}
 import com.dabanshan.catalog.api.UserService
 import com.lightbend.lagom.scaladsl.api.ServiceCall
@@ -12,10 +14,35 @@ import scala.concurrent.ExecutionContext
   */
 class UserServiceImpl (persistentEntityRegistry: PersistentEntityRegistry,
                        userRepository: UserRepository)(implicit ec: ExecutionContext) extends UserService{
-  override def registration: ServiceCall[User, Done] = ???
-
-  override def getUser(userId: String): ServiceCall[NotUsed, User] = ServiceCall { _ =>
+  /**
+    * 注册账号
+    *
+    * @return
+    */
+  override def registration: ServiceCall[User, User] = ServiceCall { userMessage =>
+    val userId = UUID.randomUUID().toString
     val ref = persistentEntityRegistry.refFor[UserEntity](userId)
-    ref.ask(GetUser(userId))
+    ref.ask(CreateUser(userId = userId, email = "", password = ""))
   }
+
+  /**
+    * 获取用户账号信息
+    *
+    * @param id
+    * @return
+    */
+  override def getUser(id: String): ServiceCall[NotUsed, User] = ???
+/**
+    * 更新用户信息
+    *
+    * @return
+    */
+  override def updateProfile: ServiceCall[CreateProfileMessage, Done] = ???
+
+  /**
+    * 获取用户信息
+    *
+    * @return
+    */
+  override def getProfile: ServiceCall[NotUsed, Profile] = ???
 }

@@ -4,7 +4,7 @@ import play.api.libs.json.{Format, Json}
 /**
   * Created by skylai on 2017/8/30.
   */
-case class User(uuid:Option[String],name:String,email:String,password:String)
+case class User(userId:String, email:String, password:String)
 
 object User{
   implicit val format: Format[User] = Json.format[User]
