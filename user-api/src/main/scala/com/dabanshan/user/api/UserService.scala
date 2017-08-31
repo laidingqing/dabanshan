@@ -22,10 +22,10 @@ trait UserService extends Service {
 
   /**
     * 获取用户账号信息
-    * @param id
+    * @param userId
     * @return
     */
-  def getUser(id: String): ServiceCall[NotUsed, User]
+  def getUser(userId: String): ServiceCall[NotUsed, User]
 
   /**
     * 更新用户信息

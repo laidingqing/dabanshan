@@ -33,8 +33,8 @@ class UserEntity extends PersistentEntity {
       }.onReadOnlyCommand[GetUser, User] {
         case (GetUser(userId), ctx, UserState(None, _)) =>
           ctx.commandFailed(NotFound(s"No user for id: $userId"))
-        case (GetUser(userId), ctx, UserState(Some(withFriends), _)) =>
-          ctx.reply(User(userId = userId, email = "withFriends.email", password = ""))
+        case (GetUser(userId), ctx, UserState(Some(user), _)) =>
+          ctx.reply(User(userId = user.userId, email = user.email, password = user.password))
       }.onEvent {
         case (UserCreated(userId, email, _, _), UserState(None, _)) =>
           UserState(Some(User(userId = userId, email = email, password = "")))

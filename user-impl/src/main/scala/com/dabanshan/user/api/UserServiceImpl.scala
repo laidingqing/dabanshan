@@ -29,10 +29,13 @@ class UserServiceImpl (persistentEntityRegistry: PersistentEntityRegistry,
   /**
     * 获取用户账号信息
     *
-    * @param id
+    * @param userId
     * @return
     */
-  override def getUser(id: String): ServiceCall[NotUsed, User] = ???
+  override def getUser(userId: String): ServiceCall[NotUsed, User] = ServiceCall{ _ =>
+    val ref = persistentEntityRegistry.refFor[UserEntity](userId)
+    ref.ask(GetUser(userId))
+  }
 /**
     * 更新用户信息
     *
