@@ -4,6 +4,7 @@ import java.util.UUID
 
 import akka.{Done, NotUsed}
 import com.dabanshan.catalog.api.UserService
+import com.dabanshan.commons.identity.Id
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntityRegistry
 
@@ -19,10 +20,10 @@ class UserServiceImpl (persistentEntityRegistry: PersistentEntityRegistry,
     *
     * @return
     */
-  override def registration: ServiceCall[User, User] = ServiceCall { userMessage =>
-    val userId = UUID.randomUUID().toString
+  override def registration: ServiceCall[CreateUserMessage, User] = ServiceCall { userMessage =>
+    val userId = Id().randomID.toString
     val ref = persistentEntityRegistry.refFor[UserEntity](userId)
-    ref.ask(CreateUser(userId = userId, email = "", password = ""))
+    ref.ask(CreateUser(userId = userId, email = userMessage.email, password = userMessage.password))
   }
 
   /**

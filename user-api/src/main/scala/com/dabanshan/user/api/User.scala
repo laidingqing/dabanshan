@@ -10,14 +10,14 @@ object User{
   implicit val format: Format[User] = Json.format[User]
 }
 
-case class LoginUser(email:String,userId:String,password:String)
+case class LoginUser(email:String, userId:String, password:String)
 
 object LoginUser{
   implicit val format: Format[LoginUser] = Json.format[LoginUser]
 }
 
-case class ResetPassword(email:String,userId:String,password:String)
+case class CreateUserMessage(email:String, password:String)
 
-object ResetPassword{
-  implicit val format: Format[ResetPassword] = Json.format[ResetPassword]
+object CreateUserMessage{
+  implicit val format: Format[CreateUserMessage] = Json.format[CreateUserMessage]
 }

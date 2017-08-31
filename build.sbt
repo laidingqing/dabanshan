@@ -14,6 +14,7 @@ lazy val commons = (project in file("commons"))
   .settings(commonSettings: _*)
   .settings(
     libraryDependencies ++= Seq(
+      "com.github.rholder.fauxflake" % "fauxflake-core" % "1.1.0",
       lagomScaladslApi,
       lagomScaladslServer % Optional,
       playJsonDerivedCodecs,

@@ -18,7 +18,7 @@ trait UserService extends Service {
     * 注册账号
     * @return
     */
-  def registration: ServiceCall[User, User]
+  def registration: ServiceCall[CreateUserMessage, User]
 
   /**
     * 获取用户账号信息
