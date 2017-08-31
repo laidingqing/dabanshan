@@ -16,3 +16,8 @@
 * account-api 结算服务
 * recommend-api 推荐服务
 * tenant-api 租户(供应商)服务
+
+## how run ?
+
+* use "sbt runAll" run a serviceLocator, a Gateway and embed Cassandra and embed Kafka.
+* standalone command - @see lagom website
