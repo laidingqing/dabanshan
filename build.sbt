@@ -8,7 +8,7 @@ val macwire = "com.softwaremill.macwire" %% "macros" % "2.2.5" % "provided"
 val scalaTest = "org.scalatest" %% "scalatest" % "3.0.1" % Test
 
 lazy val root = (project in file("."))
-  .aggregate(webGateway, commons, userApi, userImpl, productApi, catalogApi, catalogImpl)
+  .aggregate(webGateway, commons, userApi, userImpl, productApi, cookbookApi)
 
 lazy val commons = (project in file("commons"))
   .settings(commonSettings: _*)
@@ -49,27 +49,12 @@ lazy val productApi = (project in file("product-api"))
     )
   )
 
-lazy val catalogApi = (project in file("catalog-api"))
+lazy val cookbookApi = (project in file("cookbook-api"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslApi
     )
   )
-
-lazy val catalogImpl = (project in file("catalog-impl"))
-  .enablePlugins(LagomScala)
-  .settings(
-    libraryDependencies ++= Seq(
-      lagomScaladslPersistenceCassandra,
-      lagomScaladslKafkaBroker,
-      lagomScaladslTestKit,
-      macwire,
-      scalaTest
-    )
-  )
-  .settings(lagomForkedTestSettings: _*)
-  .dependsOn(catalogApi)
-
 
 lazy val webGateway = (project in file("web-gateway"))
   .enablePlugins(PlayScala, LagomPlay)
