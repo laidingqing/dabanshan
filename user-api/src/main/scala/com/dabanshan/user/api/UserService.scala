@@ -1,7 +1,10 @@
 package com.dabanshan.catalog.api
 
 import akka.{Done, NotUsed}
+import com.dabanshan.commons.response.GeneratedIdDone
 import com.dabanshan.user.api._
+import com.dabanshan.user.api.model.request.{UserCreation, UserLogin}
+import com.dabanshan.user.api.model.response.{UserDone, UserLoginDone}
 import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.api.broker.kafka.{KafkaProperties, PartitionKeyStrategy}
 import com.lightbend.lagom.scaladsl.api.transport.Method
@@ -18,36 +21,29 @@ trait UserService extends Service {
     * 注册账号
     * @return
     */
-  def registration: ServiceCall[CreateUserMessage, User]
+  def registration(): ServiceCall[UserCreation, GeneratedIdDone]
 
   /**
-    * 获取用户账号信息
+    * 账户登录
+    * @return
+    */
+  def loginUser(): ServiceCall[UserLogin, UserLoginDone]
+
+  /**
+    * 获取账户信息
     * @param userId
     * @return
     */
-  def getUser(userId: String): ServiceCall[NotUsed, User]
-
-  /**
-    * 更新用户信息
-    * @return
-    */
-  def updateProfile: ServiceCall[CreateProfileMessage, Done]
-
-  /**
-    * 获取用户信息
-    * @return
-    */
-  def getProfile: ServiceCall[NotUsed, Profile]
+  def getUser(userId: String): ServiceCall[NotUsed, UserDone]
 
   override final def descriptor = {
     import Service._
     // @formatter:off
     named("users")
       .withCalls(
-        restCall(Method.POST, "/api/users/", registration),
-        restCall(Method.GET, "/api/users/:id", getUser _),
-        restCall(Method.GET, "/api/users/:id/profiles/", getProfile _),
-        restCall(Method.PUT, "/api/users/:id/profiles/", updateProfile _)
+        restCall(Method.POST, "/api/users/", registration _),
+        restCall(Method.GET, "/api/users/:userId", getUser _),
+        restCall(Method.POST, "/api/sessions/", loginUser _)
       )
       .withAutoAcl(true)
       .withCircuitBreaker(CircuitBreaker.PerNode)

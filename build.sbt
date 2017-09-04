@@ -6,6 +6,8 @@ scalaVersion in ThisBuild := "2.11.8"
 val playJsonDerivedCodecs = "org.julienrf" %% "play-json-derived-codecs" % "3.3"
 val macwire = "com.softwaremill.macwire" %% "macros" % "2.2.5" % "provided"
 val scalaTest = "org.scalatest" %% "scalatest" % "3.0.1" % Test
+val accord = "com.wix" %% "accord-core" % "0.6.1"
+val base64 = "me.lessis" %% "base64" % "0.2.0"
 
 lazy val root = (project in file("."))
   .aggregate(webGateway, commons, userApi, userImpl, productApi, cookbookApi)
@@ -18,7 +20,9 @@ lazy val commons = (project in file("commons"))
       lagomScaladslApi,
       lagomScaladslServer % Optional,
       playJsonDerivedCodecs,
-      scalaTest
+      scalaTest,
+      accord,
+      base64
     )
   )
 
@@ -28,6 +32,8 @@ lazy val userApi = (project in file("user-api"))
       lagomScaladslApi
     )
   )
+  .dependsOn(`commons`)
+
 lazy val userImpl = (project in file("user-impl"))
   .enablePlugins(LagomScala)
   .settings(
