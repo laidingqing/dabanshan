@@ -9,5 +9,26 @@
 ## api
 
 
+### Create User
+
+**URL**
+
+`POST http://localhost:9000/api/users`
+
+**Request Headers**
+
+`无`
+
+**Request Body**
+
+```json
+{
+	"firstName": "lai",
+	"lastName": "dingqing",
+	"email": "ldq@123.com",
+	"username": "laidingqing",
+	"password": "test12345"
+}
+```
 
 

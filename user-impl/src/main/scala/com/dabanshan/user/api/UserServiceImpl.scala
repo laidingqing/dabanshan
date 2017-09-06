@@ -55,5 +55,8 @@ class UserServiceImpl (persistentEntityRegistry: PersistentEntityRegistry,
     * @param userId
     * @return
     */
-  override def getUser(userId: String): ServiceCall[NotUsed, UserDone] = ???
+  override def getUser(userId: String): ServiceCall[NotUsed, UserDone] = ServiceCall{ _ =>
+    val ref = persistentEntityRegistry.refFor[UserEntity](userId)
+    ref.ask(GetUser)
+  }
 }

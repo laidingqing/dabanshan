@@ -77,5 +77,9 @@ lazy val webGateway = (project in file("web-gateway"))
     )
   )
 
+lagomCassandraEnabled in ThisBuild := false
+lagomUnmanagedServices in ThisBuild := Map("cas_native" -> "http://localhost:9042")
+
+
 def commonSettings: Seq[Setting[_]] = Seq(
 )

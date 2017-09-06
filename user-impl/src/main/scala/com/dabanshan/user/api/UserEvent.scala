@@ -16,7 +16,7 @@ object UserEvent {
   val Tag = AggregateEventTag.sharded[UserEvent](NumShards)
 }
 
-case class UserCreated(userId: String, firstName: String, lastName: String, email: String, username: String, hashedPassword: String) extends IdentityEvent
+case class UserCreated(userId: String, username: String, email: String, firstName: String, lastName: String,  hashedPassword: String) extends UserEvent
 object UserCreated {
   implicit val format: Format[UserCreated] = Json.format
 }

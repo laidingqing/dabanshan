@@ -5,15 +5,9 @@ import play.api.libs.json.{Format, Json}
 /**
   * Created by skylai on 2017/9/4.
   */
-//State definition
-case class UserState(user: Option[User])
-
-object UserState {
-  implicit val format: Format[UserState] = Json.format
-}
 
 case class User(
-                 id: String,
+                 userId: String,
                  firstName: String,
                  lastName: String,
                  email: String,
