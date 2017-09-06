@@ -11,7 +11,8 @@ import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.ReplyType
 import play.api.libs.json.{Format, Json}
 import com.dabanshan.commons.utils.JsonFormats._
 import com.dabanshan.commons.utils.SecurePasswordHashing
-import com.dabanshan.user.api.model.response.UserDone
+import com.dabanshan.user.api.UserCommand.{CreateUser, GetUser}
+import com.dabanshan.user.api.model.response.{CreationUserDone, GetUserDone}
 import com.lightbend.lagom.scaladsl.api.transport.NotFound
 
 /**
@@ -21,29 +22,23 @@ class UserEntity extends PersistentEntity {
 
   override type Command = UserCommand[_]
   override type Event = UserEvent
-  override type State = Option[User]
+  override type State = UserState
 
-  override def initialState: Option[User] = None
+  override def initialState: UserState = UserState.empty
 
   override def behavior: Behavior = {
-    case None => notCreated
-    case Some(user) => {
-      System.out.println("user :" + user)
-      Actions().onReadOnlyCommand[GetUser.type , UserDone] {
-        case (GetUser, ctx, state) =>
-          ctx.reply(UserDone("", "", "", "", ""))
-      }
-    }
+    case state if state.isEmpty => initial
+    case state if !state.isEmpty => userCreated
   }
 
-  private val notCreated = {
-    Actions().onCommand[CreateUser, GeneratedIdDone] {
+  private val initial: Actions = {
+    Actions()
+      .onCommand[CreateUser, CreationUserDone] {
       case (CreateUser(firstName, lastName, email, username, password), ctx, state) =>
         val hashedPassword = SecurePasswordHashing.hashPassword(password)
-        val userId = Id().randomID.toString
         ctx.thenPersist(
           UserCreated(
-            userId = userId,
+            userId = entityId,
             firstName = firstName,
             lastName = lastName,
             email = email,
@@ -51,19 +46,34 @@ class UserEntity extends PersistentEntity {
             hashedPassword = hashedPassword
           )
         ) { _ =>
-          ctx.reply(GeneratedIdDone(userId.toString))
+          ctx.reply(CreationUserDone(id = entityId))
         }
-    }.onEvent {
-      case (UserCreated(userId, firstName, lastName, email, username, password), state) =>
-        System.out.println("created state:" + state)
-        Some(User(
-        userId = userId,
-        firstName = firstName,
-        lastName = lastName,
-        email = email,
-        username = username,
-        password = password
-      ))
+
+    }
+      .onEvent {
+        case (UserCreated(userId, firstName, lastName, email, username, hashedPassword), state) =>
+          UserState(Some(User(
+            userId = userId,
+            firstName = firstName,
+            lastName = lastName,
+            email = email,
+            username = username,
+            password = hashedPassword
+          )), created = true)
+      }
+  }
+
+  private val userCreated: Actions = {
+    Actions()
+      .onReadOnlyCommand[GetUser.type, GetUserDone] {
+      case (GetUser, ctx, state) =>
+        ctx.reply(GetUserDone(
+          userId = state.user.get.userId,
+          firstName = state.user.get.firstName,
+          lastName = state.user.get.lastName,
+          email = state.user.get.email,
+          username = state.user.get.username
+        ))
     }
   }
 
