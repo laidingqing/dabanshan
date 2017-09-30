@@ -1,4 +1,4 @@
-package com.dabanshan.products.api
+package com.dabanshan.products.impl.product
 
 import play.api.libs.json.{Format, Json}
 

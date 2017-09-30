@@ -12,7 +12,7 @@
 * user-api 用户服务
 * cart-api 购物车服务
 * warehouse-api 仓库服务
-* account-api 结算服务
+* balance-api 结算服务
 * recommend-api 推荐服务
 * tenant-api 租户(供应商)服务
 

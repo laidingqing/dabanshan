@@ -11,7 +11,7 @@ val base64 = "me.lessis" %% "base64" % "0.2.0"
 val jwt = "com.pauldijou" %% "jwt-play-json" % "0.12.1"
 
 lazy val root = (project in file("."))
-  .aggregate(webGateway, commons, userApi, userImpl, productApi, cookbookApi)
+  .aggregate(webGateway, commons, userApi, userImpl, productApi, productImpl, cookbookApi)
 
 lazy val commons = (project in file("commons"))
   .settings(commonSettings: _*)
@@ -85,9 +85,6 @@ lazy val webGateway = (project in file("web-gateway"))
   .settings(
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
-      lagomScaladslServer,
-      macwire,
-      scalaTest,
       "org.webjars" % "react" % "0.14.3",
       "org.webjars" % "react-router" % "1.0.3",
       "org.webjars" % "foundation" % "5.3.0"

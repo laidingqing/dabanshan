@@ -1,4 +1,4 @@
-package com.dabanshan.products.api
+package com.dabanshan.products.impl.product
 
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEvent, AggregateEventTag}
 import play.api.libs.json.{Format, Json}

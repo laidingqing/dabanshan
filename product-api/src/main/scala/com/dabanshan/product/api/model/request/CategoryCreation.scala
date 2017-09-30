@@ -6,10 +6,8 @@ import com.wix.accord.dsl._
   * Created by skylai on 2017/9/30.
   */
 case class CategoryCreation (
-  id: String,
   name: String,
-  description: Option[String],
-  parent: Option[String]
+  parentId: Option[String]
 )
 
 object CategoryCreation {

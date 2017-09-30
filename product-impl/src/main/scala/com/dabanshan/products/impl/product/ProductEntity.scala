@@ -1,8 +1,7 @@
-package com.dabanshan.products.api
+package com.dabanshan.products.impl.product
 
-import com.dabanshan.commons.utils.SecurePasswordHashing
 import com.dabanshan.product.api.model.response.{CreationProductDone, GetProductDone}
-import com.dabanshan.products.api.ProductCommand.{CreateProduct, GetProduct}
+import com.dabanshan.products.impl.product.ProductCommand.{CreateProduct, GetProduct}
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity
 
 /**
@@ -24,7 +23,7 @@ class ProductEntity extends PersistentEntity {
   private val initial: Actions = {
     Actions()
       .onCommand[CreateProduct, CreationProductDone] {
-      case (CreateProduct(), ctx, state) =>
+      case (CreateProduct(_), ctx, state) =>
         ctx.thenPersist(
           ProductCreated(
             id = entityId

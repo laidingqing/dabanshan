@@ -1,6 +1,8 @@
-package com.dabanshan.products.api
+package com.dabanshan.products.impl
 
 import com.dabanshan.catalog.api.ProductService
+import com.dabanshan.products.impl.category.{CategoryEntity, CategoryEventProcessor, CategoryRepository}
+import com.dabanshan.products.impl.product._
 import com.lightbend.lagom.scaladsl.api.ServiceLocator
 import com.lightbend.lagom.scaladsl.api.ServiceLocator.NoServiceLocator
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
@@ -37,13 +39,16 @@ trait ProductComponents
   def environment: Environment
 
   override lazy val lagomServer = serverFor[ProductService](wire[ProductServiceImpl])
-
-  override lazy val jsonSerializerRegistry = ProductSerializerRegistry
+  override lazy val jsonSerializerRegistry = ProductsSerializerRegistry
 
   lazy val productRepository = wire[ProductRepository]
+  lazy val categoryRepository = wire[CategoryRepository]
 
   persistentEntityRegistry.register(wire[ProductEntity])
-  readSide.register(wire[UserEventProcessor])
+  persistentEntityRegistry.register(wire[CategoryEntity])
+
+  readSide.register(wire[ProductEventProcessor])
+  readSide.register(wire[CategoryEventProcessor])
 }
 
 abstract class ProductApplication(context: LagomApplicationContext)
