@@ -12,4 +12,4 @@ CREATE TABLE IF NOT EXISTS users(
 CREATE MATERIALIZED VIEW IF NOT EXISTS users_by_username AS
   SELECT * FROM users
   WHERE username IS NOT NULL
-  PRIMARY KEY (username, id);
+  PRIMARY KEY (username, userid);

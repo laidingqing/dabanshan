@@ -8,6 +8,7 @@ val macwire = "com.softwaremill.macwire" %% "macros" % "2.2.5" % "provided"
 val scalaTest = "org.scalatest" %% "scalatest" % "3.0.1" % Test
 val accord = "com.wix" %% "accord-core" % "0.6.1"
 val base64 = "me.lessis" %% "base64" % "0.2.0"
+val jwt = "com.pauldijou" %% "jwt-play-json" % "0.12.1"
 
 lazy val root = (project in file("."))
   .aggregate(webGateway, commons, userApi, userImpl, productApi, cookbookApi)
@@ -22,7 +23,8 @@ lazy val commons = (project in file("commons"))
       playJsonDerivedCodecs,
       scalaTest,
       accord,
-      base64
+      base64,
+      jwt
     )
   )
 
@@ -53,7 +55,22 @@ lazy val productApi = (project in file("product-api"))
     libraryDependencies ++= Seq(
       lagomScaladslApi
     )
+  ).dependsOn(`commons`)
+
+lazy val productImpl = (project in file("product-impl"))
+  .enablePlugins(LagomScala)
+  .settings(
+    libraryDependencies ++= Seq(
+      lagomScaladslPersistenceCassandra,
+      lagomScaladslKafkaBroker,
+      lagomScaladslTestKit,
+      macwire,
+      scalaTest
+
+    )
   )
+  .settings(lagomForkedTestSettings: _*)
+  .dependsOn(productApi, commons)
 
 lazy val cookbookApi = (project in file("cookbook-api"))
   .settings(

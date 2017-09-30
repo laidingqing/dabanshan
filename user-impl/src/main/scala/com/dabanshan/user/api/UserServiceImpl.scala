@@ -5,11 +5,13 @@ import java.util.UUID
 import akka.{Done, NotUsed}
 import com.dabanshan.catalog.api.UserService
 import com.dabanshan.commons.identity.Id
-import com.dabanshan.commons.response.GeneratedIdDone
+import com.dabanshan.commons.response.{GeneratedIdDone, TokenContent}
+import com.dabanshan.commons.utils.SecurePasswordHashing
 import com.dabanshan.user.api.UserCommand.{CreateUser, GetUser}
-import com.dabanshan.user.api.model.request.{UserCreation, WithUserCreationFields}
-import com.dabanshan.user.api.model.response.{CreationUserDone, GetUserDone}
+import com.dabanshan.user.api.model.request.{UserCreation, UserLogin, WithUserCreationFields}
+import com.dabanshan.user.api.model.response.{CreationUserDone, GetUserDone, LoginUserDone}
 import com.lightbend.lagom.scaladsl.api.ServiceCall
+import com.lightbend.lagom.scaladsl.api.transport.Forbidden
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntityRegistry
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -53,5 +55,29 @@ class UserServiceImpl (persistentEntityRegistry: PersistentEntityRegistry,
   override def getUser(userId: String): ServiceCall[NotUsed, GetUserDone] = ServiceCall{ _ =>
     val ref = persistentEntityRegistry.refFor[UserEntity](userId)
     ref.ask(GetUser)
+  }
+
+  /**
+    * 登录
+    *
+    * @return
+    */
+  override def loginUser(): ServiceCall[UserLogin, LoginUserDone] = ServiceCall{ request =>
+    def passwordMatches(providedPassword: String, storedHashedPassword: String) = SecurePasswordHashing.validatePassword(providedPassword, storedHashedPassword)
+
+    for {
+      maybeUser <- userRepository.findUserByUsername(request.username)
+      token = maybeUser.filter(user => passwordMatches(request.password, user.hashedPassword))
+        .map(user =>
+          TokenContent(
+            userId = user.id,
+            username = user.username
+          )
+        )
+        .map(tokenContent => TokenUtil.generateTokens(tokenContent))
+        .getOrElse(throw Forbidden("Username and password combination not found"))
+    }yield {
+      LoginUserDone(token.authToken, token.refreshToken.getOrElse(throw new IllegalStateException("Refresh token missing")))
+    }
   }
 }
