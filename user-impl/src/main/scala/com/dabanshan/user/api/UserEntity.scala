@@ -3,11 +3,16 @@ package com.dabanshan.user.api
 import java.time.Instant
 
 import akka.Done
+import com.dabanshan.commons.identity.Id
+import com.dabanshan.commons.response.GeneratedIdDone
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEvent, AggregateEventTag, PersistentEntity}
 import com.dabanshan.user.api._
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.ReplyType
 import play.api.libs.json.{Format, Json}
 import com.dabanshan.commons.utils.JsonFormats._
+import com.dabanshan.commons.utils.SecurePasswordHashing
+import com.dabanshan.user.api.UserCommand.{CreateUser, GetUser}
+import com.dabanshan.user.api.model.response.{CreationUserDone, GetUserDone}
 import com.lightbend.lagom.scaladsl.api.transport.NotFound
 
 /**
@@ -18,71 +23,58 @@ class UserEntity extends PersistentEntity {
   override type Command = UserCommand[_]
   override type Event = UserEvent
   override type State = UserState
-  override def initialState: UserState = UserState(None)
+
+  override def initialState: UserState = UserState.empty
 
   override def behavior: Behavior = {
-    case UserState(maybeUser, _) =>
-      Actions().onCommand[CreateUser, User]{
-        case (CreateUser(userId, email, password), ctx, state) =>
-          val newUser = User(userId = userId, email = email, password = password)
-          ctx.thenPersist(
-            UserCreated(newUser.userId, newUser.email, newUser.password)
-          ) { _ =>
-            ctx.reply(newUser)
-          }
-      }.onReadOnlyCommand[GetUser, User] {
-        case (GetUser(userId), ctx, UserState(None, _)) =>
-          ctx.commandFailed(NotFound(s"No user for id: $userId"))
-        case (GetUser(userId), ctx, UserState(Some(withFriends), _)) =>
-          ctx.reply(User(userId = userId, email = "withFriends.email", password = ""))
-      }.onEvent {
-        case (UserCreated(userId, email, _, _), UserState(None, _)) =>
-          UserState(Some(User(userId = userId, email = email, password = "")))
+    case state if state.isEmpty => initial
+    case state if !state.isEmpty => userCreated
+  }
+
+  private val initial: Actions = {
+    Actions()
+      .onCommand[CreateUser, CreationUserDone] {
+      case (CreateUser(firstName, lastName, email, username, password), ctx, state) =>
+        val hashedPassword = SecurePasswordHashing.hashPassword(password)
+        ctx.thenPersist(
+          UserCreated(
+            userId = entityId,
+            firstName = firstName,
+            lastName = lastName,
+            email = email,
+            username = username,
+            hashedPassword = hashedPassword
+          )
+        ) { _ =>
+          ctx.reply(CreationUserDone(id = entityId))
+        }
+
+    }
+      .onEvent {
+        case (UserCreated(userId, firstName, lastName, email, username, hashedPassword), state) =>
+          UserState(Some(User(
+            userId = userId,
+            firstName = firstName,
+            lastName = lastName,
+            email = email,
+            username = username,
+            password = hashedPassword
+          )), created = true)
       }
   }
 
-}
-//Command definition
+  private val userCreated: Actions = {
+    Actions()
+      .onReadOnlyCommand[GetUser.type, GetUserDone] {
+      case (GetUser, ctx, state) =>
+        ctx.reply(GetUserDone(
+          userId = state.user.get.userId,
+          firstName = state.user.get.firstName,
+          lastName = state.user.get.lastName,
+          email = state.user.get.email,
+          username = state.user.get.username
+        ))
+    }
+  }
 
-sealed trait UserCommand[R] extends ReplyType[R]
-
-case class CreateUser(userId: String, email: String, password: String) extends UserCommand[User]
-case class GetUser(userId: String) extends UserCommand[User]
-
-
-object CreateUser {
-  implicit val format: Format[CreateUser] = Json.format
-}
-object GetUser {
-  implicit val format: Format[GetUser] = Json.format
-}
-
-//Event definition
-sealed trait UserEvent extends AggregateEvent[UserEvent] {
-  override def aggregateTag = UserEvent.Tag
-}
-
-object UserEvent {
-  val NumShards = 4
-  val Tag = AggregateEventTag.sharded[UserEvent](NumShards)
-}
-
-case class UserCreated(userId: String, email: String, password: String, timestamp: Instant = Instant.now()) extends UserEvent
-
-object UserCreated {
-  implicit val format: Format[UserCreated] = Json.format
-}
-
-object UserStatus extends Enumeration {
-  val Created, Completed, Cancelled = Value
-  type Status = Value
-
-  implicit val format: Format[Status] = enumFormat(UserStatus)
-}
-
-//State definition
-case class UserState(user: Option[User], timestamp: Instant = Instant.now())
-
-object UserState {
-  implicit val format: Format[UserState] = Json.format
 }

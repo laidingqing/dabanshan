@@ -9,7 +9,7 @@ import scala.collection.immutable
   */
 object UserSerializerRegistry extends JsonSerializerRegistry {
   override def serializers: immutable.Seq[JsonSerializer[_]] = immutable.Seq(
-    JsonSerializer[User],
-    JsonSerializer[UserCreated]
+    JsonSerializer[UserCreated],
+    JsonSerializer[UserState]
   )
 }

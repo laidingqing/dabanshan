@@ -12,7 +12,26 @@ import scala.concurrent.{ExecutionContext, Future}
 /**
   * Created by skylai on 2017/8/30.
   */
+case class UserByUsername(username: String, id: String, hashedPassword: String)
+
+
 class UserRepository (session: CassandraSession)(implicit ec: ExecutionContext) {
+
+  def findUserByUsername(username: String): Future[Option[UserByUsername]] = {
+    val result = session.selectOne("SELECT userId, username, hashed_password FROM users_by_username WHERE username = ?", username).map {
+      case Some(row) => Option(
+        UserByUsername(
+          username = row.getString("username"),
+          id = row.getString("userId"),
+          hashedPassword = row.getString("hashed_password")
+        )
+      )
+      case None => Option.empty
+    }
+    result
+  }
+
+
 
 }
 
@@ -32,7 +51,7 @@ class UserEventProcessor(session: CassandraSession, readSide: CassandraReadSide)
     UserEvent.Tag.allTags
 
   private def insertUser(user: UserCreated) = {
-    Future.successful(immutable.Seq(insertUserForEmailStatement.bind(user.userId, user.email, user.password)))
+    Future.successful(immutable.Seq(insertUserForEmailStatement.bind(user.userId, user.username, user.email, user.firstName, user.lastName, user.hashedPassword)))
   }
 
   private def createTables() = {
@@ -41,8 +60,11 @@ class UserEventProcessor(session: CassandraSession, readSide: CassandraReadSide)
         """
           |CREATE TABLE IF NOT EXISTS users (
           |  userId text PRIMARY KEY,
+          |  username text,
           |  email text,
-          |  password text
+          |  first_name text,
+          |  last_name text,
+          |  hashed_password text
           |  )
         """.stripMargin)
     } yield Done
@@ -54,9 +76,12 @@ class UserEventProcessor(session: CassandraSession, readSide: CassandraReadSide)
         """
           |INSERT INTO users(
           |  userId,
+          |  username,
           |  email,
-          |  password
-          |) VALUES (?, ?, ?)
+          |  first_name,
+          |  last_name,
+          |  hashed_password
+          |) VALUES (?, ?, ?, ?, ?, ?)
         """.stripMargin)
     } yield {
       insertUserForEmailStatement = insertUserForEmail
