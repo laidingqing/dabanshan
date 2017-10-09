@@ -11,7 +11,7 @@ val base64 = "me.lessis" %% "base64" % "0.2.0"
 val jwt = "com.pauldijou" %% "jwt-play-json" % "0.12.1"
 
 lazy val root = (project in file("."))
-  .aggregate(webGateway, commons, userApi, userImpl, productApi, productImpl, orderApi, cookbookApi)
+  .aggregate(webGateway, commons, userApi, tenantApi, userImpl, productApi, productImpl, orderApi, cookbookApi)
 
 lazy val commons = (project in file("commons"))
   .settings(commonSettings: _*)
@@ -49,6 +49,13 @@ lazy val userImpl = (project in file("user-impl"))
   )
   .settings(lagomForkedTestSettings: _*)
   .dependsOn(userApi, commons)
+
+lazy val tenantApi = (project in file("tenant-api"))
+  .settings(
+    libraryDependencies ++= Seq(
+      lagomScaladslApi
+    )
+  ).dependsOn(`commons`)
 
 lazy val productApi = (project in file("product-api"))
   .settings(
