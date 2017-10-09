@@ -49,6 +49,43 @@ trait ProductService extends Service {
     */
   def findProductByCategory(categoryId: String): ServiceCall[NotUsed, GetProductDone]
 
+  /**
+    * 添加商品缩略图
+    * @param productId
+    * @return
+    */
+  def createProductThumbnails(productId: String): ServiceCall[NotUsed, Done]
+
+  /**
+    * 添加商品详细图
+    * @param productId
+    * @return
+    */
+  def createProductDetails(productId: String): ServiceCall[NotUsed, Done]
+
+  /**
+    * 删除缩略图
+    * @param productId
+    * @param thumbId
+    * @return
+    */
+  def deleteProductThumbnails(productId: String, thumbId: String ): ServiceCall[NotUsed, Done]
+
+  /**
+    * 删除商品详细图
+    * @param productId
+    * @param detailId
+    * @return
+    */
+  def deleteProductDetails(productId: String, detailId: String ): ServiceCall[NotUsed, Done]
+
+  /**
+    * 更新商品信息
+    * @param productId
+    * @return
+    */
+  def updateProduct(productId: String): ServiceCall[NotUsed, Done]
+
   override final def descriptor = {
     import Service._
     // @formatter:off
@@ -56,6 +93,11 @@ trait ProductService extends Service {
       .withCalls(
         restCall(Method.POST, "/api/products", createProduct),
         restCall(Method.GET, "/api/products/:productId", createProduct),
+        restCall(Method.PUT, "/api/products/:productId", updateProduct _),
+        restCall(Method.POST, "/api/products/:productId/thumbnails", createProductThumbnails _),
+        restCall(Method.POST, "/api/products/:productId/thumbnails/:thumbId", deleteProductThumbnails _ _),
+        restCall(Method.POST, "/api/products/:productId/details", createProductDetails _),
+        restCall(Method.POST, "/api/products/:productId/details/:detailId", deleteProductDetails _ _),
         restCall(Method.GET, "/api/products", findProductByCategory _),
         restCall(Method.POST, "/api/categories/", createCategory),
         restCall(Method.GET, "/api/categories/", getCategories _)

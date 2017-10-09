@@ -1,4 +1,4 @@
-package com.dabanshan.tenant.api.model.request
+package com.dabanshan.user.api.model.request
 
 import com.wix.accord.dsl._
 import play.api.libs.json.{Format, Json}

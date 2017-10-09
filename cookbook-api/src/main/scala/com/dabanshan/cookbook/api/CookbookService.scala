@@ -36,7 +36,14 @@ trait CookbookService extends Service {
     * @param cookbookId
     * @return
     */
-  def updateCookBook(cookbookId: UUID): ServiceCall[NotUsed, Done]
+  def updateCookBook(cookbookId: String): ServiceCall[NotUsed, Done]
+
+  /**
+    * 添加菜谱食材
+    * @param cookbookId
+    * @return
+    */
+  def addCookBookProduct(cookbookId: String): ServiceCall[NotUsed, Done]
 
   override final def descriptor = {
     import Service._
@@ -46,7 +53,8 @@ trait CookbookService extends Service {
         restCall(Method.GET, "/api/cookbooks/", getRecommandCookBooks),
         restCall(Method.GET, "/api/cookbooks/all", getCookBooks),
         restCall(Method.POST, "/api/cookbooks/", addCookBook),
-        restCall(Method.PUT, "/api/cookbooks/:id", updateCookBook _)
+        restCall(Method.PUT, "/api/cookbooks/:cookbookId", updateCookBook _),
+        restCall(Method.POST, "/api/cookbooks/:cookbookId/products", addCookBookProduct _)
       )
       .withAutoAcl(true)
       .withCircuitBreaker(CircuitBreaker.PerNode)

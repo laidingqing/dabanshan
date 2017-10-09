@@ -1,4 +1,4 @@
-package com.dabanshan.tenant.api.model.response
+package com.dabanshan.user.api.model.response
 
 import com.dabanshan.commons.response.GeneratedIdDone
 import play.api.libs.json.{Format, Json}

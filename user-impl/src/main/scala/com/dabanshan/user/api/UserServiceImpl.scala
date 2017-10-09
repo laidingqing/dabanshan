@@ -8,8 +8,8 @@ import com.dabanshan.commons.identity.Id
 import com.dabanshan.commons.response.{GeneratedIdDone, TokenContent}
 import com.dabanshan.commons.utils.SecurePasswordHashing
 import com.dabanshan.user.api.UserCommand.{CreateUser, GetUser}
-import com.dabanshan.user.api.model.request.{UserCreation, UserLogin, WithUserCreationFields}
-import com.dabanshan.user.api.model.response.{CreationUserDone, GetUserDone, LoginUserDone}
+import com.dabanshan.user.api.model.request._
+import com.dabanshan.user.api.model.response._
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.lightbend.lagom.scaladsl.api.transport.Forbidden
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntityRegistry
@@ -80,4 +80,41 @@ class UserServiceImpl (persistentEntityRegistry: PersistentEntityRegistry,
       LoginUserDone(token.authToken, token.refreshToken.getOrElse(throw new IllegalStateException("Refresh token missing")))
     }
   }
+
+  // ~ 以下为用户租户信息
+
+  /**
+    * 获得用户开通的租户信息
+    *
+    * @param userId
+    * @param tenantId
+    * @return
+    */
+  override def getTenant(userId: String, tenantId: String): ServiceCall[NotUsed, GetTenantDone] = ???
+
+  /**
+    * 更新租户信息
+    *
+    * @param userId
+    * @param tenantId
+    * @return
+    */
+override def updateTenant(userId: String, tenantId: String): ServiceCall[TenantUpdation, CreationTenantDone] = ???
+
+  /**
+    * 创建用户租户信息
+    *
+    * @param userId
+    * @return
+    */
+  override def createTenant(userId: String): ServiceCall[TenantCreation, CreationTenantDone] = ???
+
+  /**
+    * 增加租户资质信息
+    *
+    * @param userId
+    * @param tenantId
+    * @return
+    */
+  override def addTenantCredentials(userId: String, tenantId: String): ServiceCall[NotUsed, Done] = ???
 }

@@ -1,7 +1,5 @@
-package com.dabanshan.tenant.api.model.request
+package com.dabanshan.user.api.model.request
 
-import com.dabanshan.commons.regex.Matchers
-import com.dabanshan.commons.validation.ValidationViolationKeys._
 import com.wix.accord.dsl._
 import play.api.libs.json.{Format, Json}
 

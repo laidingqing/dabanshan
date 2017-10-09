@@ -8,11 +8,11 @@ import com.wix.accord.dsl._
 case class ProductCreation(
       id: String,
       name: String,
-      description: Option[String],
-      thumbnails: Seq[String],
       price: BigDecimal,
       unit: String,
-      details: Seq[String]
+      description: Option[String],
+      thumbnails: Option[Seq[String]],
+      details: Option[Seq[String]]
 )
 
 object ProductCreation {

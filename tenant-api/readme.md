@@ -1,4 +1,0 @@
-# tenant-api
-
-## tenant story
-

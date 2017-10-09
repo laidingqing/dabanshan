@@ -1,4 +1,4 @@
-package com.dabanshan.order.api.model.response
+package com.dabanshan.balance.api.model.response
 
 import java.util.Date
 
