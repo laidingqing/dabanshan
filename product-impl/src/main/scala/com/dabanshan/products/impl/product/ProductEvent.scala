@@ -15,9 +15,7 @@ object ProductEvent {
   val Tag = AggregateEventTag.sharded[ProductEvent](NumShards)
 }
 
-case class ProductCreated(
-  id: String
-) extends ProductEvent
+case class ProductCreated(product: Product) extends ProductEvent
 
 object ProductCreated {
   implicit val format: Format[ProductCreated] = Json.format

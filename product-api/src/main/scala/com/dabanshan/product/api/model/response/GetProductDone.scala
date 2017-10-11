@@ -9,10 +9,8 @@ case class GetProductDone(
      id: String,
      name: String,
      description: Option[String],
-     thumbnails: Seq[String],
      price: BigDecimal,
-     unit: String,
-     details: Seq[String]
+     unit: String
 )
 
 object GetProductDone {

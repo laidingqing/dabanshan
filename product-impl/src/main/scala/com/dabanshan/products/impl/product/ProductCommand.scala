@@ -1,5 +1,6 @@
 package com.dabanshan.products.impl.product
 
+import akka.Done
 import com.dabanshan.product.api.model.response.{CreationProductDone, GetProductDone}
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.ReplyType
 import com.lightbend.lagom.scaladsl.playjson.JsonSerializer
@@ -18,10 +19,16 @@ object ProductCommand {
     JsonSerializer(Json.format[CreateProduct]),
     JsonSerializer(emptySingletonFormat(GetProduct)))
 
-  case class CreateProduct(
-      id: String
-   ) extends ProductCommand[CreationProductDone]
-
+  //创建商品命令
+  case class CreateProduct(product: Product) extends ProductCommand[CreationProductDone]
+  //获取商品命令
   case object GetProduct extends ProductCommand[GetProductDone]
+  //更新价格命令
+  case class UpdatePrice(price: BigDecimal) extends ProductCommand[Done]
+  object UpdatePrice {
+    implicit val format: Format[UpdatePrice] = Json.format
+  }
+
+
 
 }

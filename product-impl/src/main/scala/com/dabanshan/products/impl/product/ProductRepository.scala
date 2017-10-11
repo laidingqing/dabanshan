@@ -8,11 +8,11 @@ import com.lightbend.lagom.scaladsl.persistence.cassandra.{CassandraReadSide, Ca
 import scala.collection.immutable
 import scala.concurrent.{ExecutionContext, Future}
 
+import scala.language.implicitConversions
 /**
   * Created by skylai on 2017/9/30.
   */
 class ProductRepository (session: CassandraSession)(implicit ec: ExecutionContext) {
-
 
 }
 
@@ -20,7 +20,8 @@ class ProductRepository (session: CassandraSession)(implicit ec: ExecutionContex
 class ProductEventProcessor(session: CassandraSession, readSide: CassandraReadSide)(implicit ec: ExecutionContext)
   extends ReadSideProcessor[ProductEvent]
 {
-  private var insertProductStatement: PreparedStatement = null
+  private var insertProductCreatorStatement: PreparedStatement = null
+  private var insertProductSummaryStatement: PreparedStatement = null
   private var insertProductWithCategoryStatement: PreparedStatement = null
 
   override def buildHandler =
@@ -30,27 +31,66 @@ class ProductEventProcessor(session: CassandraSession, readSide: CassandraReadSi
       .setEventHandler[ProductCreated](e => insertProduct(e.event))
       .build
 
-  override def aggregateTags =
-    ProductEvent.Tag.allTags
+  override def aggregateTags = ProductEvent.Tag.allTags
 
-  private def insertProduct(user: ProductCreated) = {
-    Future.successful(immutable.Seq(insertProductStatement.bind()))
+  private def insertProduct(productCreated: ProductCreated) = {
+    Future.successful(immutable.Seq(
+      insertProductCreator(productCreated.product),
+      insertProductSummaryByCreator(productCreated.product)
+    ))
+  }
+
+  private def insertProductCreator(product: Product) = {
+    insertProductCreatorStatement.bind(product.id, product.creator)
+  }
+
+  private def insertProductSummaryByCreator(p: Product) = {
+    insertProductSummaryStatement.bind(
+      p.creator,
+      p.id,
+      p.name,
+      p.price,
+      p.unit,
+      p.category,
+      p.description.getOrElse(null),
+      p.thumbnails.getOrElse(null),
+      p.details.getOrElse(null),
+      p.status.toString
+    )
   }
 
   private def createTables() = {
     for {
       _ <- session.executeCreateTable(
         """
-          |CREATE TABLE IF NOT EXISTS products (
-          |  productId text PRIMARY KEY,
-          |  )
+          |CREATE TABLE IF NOT EXISTS productCreator (
+          | productId text PRIMARY KEY,
+          | creatorId text
+          |)
+        """.stripMargin)
+
+      _ <- session.executeCreateTable(
+        """
+          |CREATE TABLE IF NOT EXISTS productSummaryByCreator (
+          |  creatorId text,
+          |  productId text,
+          |  name text,
+          |  price decimal,
+          |  unit text,
+          |  category text,
+          |  description text,
+          |  thumbnails list<text>,
+          |  details list<text>,
+          |  status text,
+          |  PRIMARY KEY (creatorId, productId)
+          |  )WITH CLUSTERING ORDER BY (productId DESC)
         """.stripMargin)
 
       _ <- session.executeCreateTable(
         """
           |CREATE TABLE IF NOT EXISTS productsWithCategory (
           |  productId text PRIMARY KEY,
-          |  categoryId text
+          |  category text
           |  )
         """.stripMargin)
 
@@ -59,24 +99,37 @@ class ProductEventProcessor(session: CassandraSession, readSide: CassandraReadSi
 
   private def prepareStatements() = {
     for {
-      insertProduct <- session.prepare(
+      insertProductCreator <- session.prepare("""
+        INSERT INTO productCreator(productId, creatorId) VALUES (?, ?)
+      """)
+      insertProductSummary <- session.prepare(
         """
-          |INSERT INTO products(
-          |  productId
-          |) VALUES (?)
+          |INSERT INTO productSummaryByCreator(
+          |  creatorId,
+          |  productId,
+          |  name,
+          |  price,
+          |  unit,
+          |  category,
+          |  description,
+          |  thumbnails,
+          |  details,
+          |  status
+          |) VALUES (?,?,?,?,?,?,?,?,?,?)
         """.stripMargin)
 
       insertProductWithCategory <- session.prepare(
         """
           |INSERT INTO productsWithCategory(
           |  productId,
-          |  categoryId
+          |  category
           |) VALUES (?, ?)
         """.stripMargin
       )
 
     } yield {
-      insertProductStatement = insertProduct
+      insertProductCreatorStatement = insertProductCreator
+      insertProductSummaryStatement = insertProductSummary
       insertProductWithCategoryStatement = insertProductWithCategory
       Done
     }

@@ -7,11 +7,11 @@ import com.dabanshan.product.api.model.request.{CategoryCreation, ProductCreatio
 import com.dabanshan.product.api.model.response.{CreationCategoryDone, CreationProductDone, GetAllCategoryDone, GetProductDone}
 import com.dabanshan.products.impl.category.CategoryCommand.{CreateCategory, GetAllCategory}
 import com.dabanshan.products.impl.category.CategoryEntity
-import com.dabanshan.products.impl.product.{ProductEntity, ProductRepository}
-import com.dabanshan.user.api.UserCommand.{CreateUser, GetUser}
-import com.dabanshan.user.api.UserEntity
+import com.dabanshan.products.impl.product.ProductCommand.CreateProduct
+import com.dabanshan.products.impl.product.{Product, ProductEntity, ProductRepository, ProductStatus}
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntityRegistry
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.ExecutionContext
 
@@ -20,12 +20,22 @@ import scala.concurrent.ExecutionContext
   */
 class ProductServiceImpl (persistentEntityRegistry: PersistentEntityRegistry,
                           userRepository: ProductRepository)(implicit ec: ExecutionContext) extends ProductService{
+
+  val log: Logger = LoggerFactory.getLogger(getClass)
   /**
     * 创建商品
     *
     * @return
     */
-  override def createProduct: ServiceCall[ProductCreation, CreationProductDone] = ???
+  override def createProduct: ServiceCall[ProductCreation, CreationProductDone] = ServiceCall { request =>
+    log.info("request :", request)
+    val productId = Id().randomID.toString
+    val ref = productEntityRef(productId)
+    val pProduct = Product(productId, request.name, request.price, request.unit, request.category, request.description, ProductStatus.Created, request.thumbnails, request.details, request.creator)
+    ref.ask(
+      CreateProduct(pProduct)
+    )
+  }
 
   /**
     * 根据分类查询商品
@@ -48,7 +58,7 @@ class ProductServiceImpl (persistentEntityRegistry: PersistentEntityRegistry,
     * @return
     */
   override def createCategory(): ServiceCall[CategoryCreation, CreationCategoryDone] = ServiceCall { request =>
-    val ref = catagoryEntityRef(Id().randomID.toString)
+    val ref = categoryEntityRef(Id().randomID.toString)
     ref.ask(
       CreateCategory(
         name = request.name
@@ -61,11 +71,53 @@ class ProductServiceImpl (persistentEntityRegistry: PersistentEntityRegistry,
     *
     * @return
     */
-  override def getProduct(): ServiceCall[NotUsed, GetProductDone] = ???
+  override def getProduct(productId: String): ServiceCall[NotUsed, GetProductDone] = ???
 
 
 
-  private def catagoryEntityRef(id: String) = persistentEntityRegistry.refFor[CategoryEntity](id.toString)
+  /**
+    * 添加商品缩略图
+    *
+    * @param productId
+    * @return
+    */
+  override def createProductThumbnails(productId: String): ServiceCall[NotUsed, Done] = ???
+
+  /**
+    * 删除缩略图
+    *
+    * @param productId
+    * @param thumbId
+    * @return
+    */
+override def deleteProductThumbnails(productId: String, thumbId: String): ServiceCall[NotUsed, Done] = ???
+
+  /**
+    * 删除商品详细图
+    *
+    * @param productId
+    * @param detailId
+    * @return
+    */
+  override def deleteProductDetails(productId: String, detailId: String): ServiceCall[NotUsed, Done] = ???
+
+  /**
+    * 添加商品详细图
+    *
+    * @param productId
+    * @return
+    */
+  override def createProductDetails(productId: String): ServiceCall[NotUsed, Done] = ???
+
+  /**
+    * 更新商品信息
+    *
+    * @param productId
+    * @return
+    */
+  override def updateProduct(productId: String): ServiceCall[ProductCreation, CreationProductDone] = ???
+
+  private def categoryEntityRef(id: String) = persistentEntityRegistry.refFor[CategoryEntity](id.toString)
 
   private def productEntityRef(id: String) = persistentEntityRegistry.refFor[ProductEntity](id.toString)
 

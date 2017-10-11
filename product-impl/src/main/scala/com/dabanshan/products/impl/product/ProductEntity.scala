@@ -23,21 +23,18 @@ class ProductEntity extends PersistentEntity {
   private val initial: Actions = {
     Actions()
       .onCommand[CreateProduct, CreationProductDone] {
-      case (CreateProduct(_), ctx, state) =>
+      case (CreateProduct(product), ctx, state) =>
+        System.out.println(">>>>> this is ")
         ctx.thenPersist(
-          ProductCreated(
-            id = entityId
-          )
+          ProductCreated(product)
         ) { _ =>
           ctx.reply(CreationProductDone(id = entityId))
         }
 
     }
       .onEvent {
-        case (ProductCreated(id), state) =>
-          ProductState(Some(Product(
-            id = id
-          )), created = true)
+        case (ProductCreated(product), state) =>
+          ProductState(Some(product), created = true)
       }
   }
 
@@ -45,7 +42,12 @@ class ProductEntity extends PersistentEntity {
     Actions()
       .onReadOnlyCommand[GetProduct.type, GetProductDone] {
       case (GetProduct, ctx, state) =>
-        ctx.reply(GetProductDone("", "", Some(""), Seq.empty, 0, "", Seq.empty))
+        ctx.reply(GetProductDone(
+          state.product.get.id,
+          state.product.get.name,
+          state.product.get.description,
+          state.product.get.price,
+          state.product.get.unit))
     }
   }
 }
