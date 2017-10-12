@@ -9,6 +9,7 @@ val scalaTest = "org.scalatest" %% "scalatest" % "3.0.1" % Test
 val accord = "com.wix" %% "accord-core" % "0.6.1"
 val base64 = "me.lessis" %% "base64" % "0.2.0"
 val jwt = "com.pauldijou" %% "jwt-play-json" % "0.12.1"
+val cassandraDriverExtras = "com.datastax.cassandra" % "cassandra-driver-extras" % "3.1.2"
 
 lazy val root = (project in file("."))
   .aggregate(webGateway, commons, userApi, userImpl, productApi, productImpl, balanceApi, cookbookApi)
@@ -19,6 +20,7 @@ lazy val commons = (project in file("commons"))
     libraryDependencies ++= Seq(
       "com.github.rholder.fauxflake" % "fauxflake-core" % "1.1.0",
       lagomScaladslApi,
+      cassandraDriverExtras,
       lagomScaladslServer % Optional,
       playJsonDerivedCodecs,
       scalaTest,

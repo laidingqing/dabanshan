@@ -6,19 +6,16 @@ import com.wix.accord.dsl._
   * Created by skylai on 2017/9/4.
   */
 case class ProductCreation(
-      id: String,
       name: String,
       price: BigDecimal,
       unit: String,
+      category: String,
       description: Option[String],
-      thumbnails: Option[Seq[String]],
-      details: Option[Seq[String]]
+      thumbnails: Option[List[String]],
+      details: Option[List[String]],
+      creator: String
 )
 
 object ProductCreation {
   implicit val format: Format[ProductCreation] = Json.format
-
-  implicit val productCreationValidator = validator[ProductCreation] { u =>
-
-  }
 }

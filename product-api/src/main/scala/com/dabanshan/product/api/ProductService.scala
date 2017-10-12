@@ -34,7 +34,7 @@ trait ProductService extends Service {
     * 根据编号获取商品信息
     * @return
     */
-  def getProduct(): ServiceCall[NotUsed, GetProductDone]
+  def getProduct(productId: String): ServiceCall[NotUsed, GetProductDone]
 
   /**
     * 获取所有分类
@@ -50,11 +50,11 @@ trait ProductService extends Service {
   def findProductByCategory(categoryId: String): ServiceCall[NotUsed, GetProductDone]
 
   /**
-    * 添加商品缩略图
+    * 添加一张商品缩略图
     * @param productId
     * @return
     */
-  def createProductThumbnails(productId: String): ServiceCall[NotUsed, Done]
+  def createProductThumbnails(productId: String): ServiceCall[List[String], Done]
 
   /**
     * 添加商品详细图
@@ -84,21 +84,22 @@ trait ProductService extends Service {
     * @param productId
     * @return
     */
-  def updateProduct(productId: String): ServiceCall[NotUsed, Done]
+  def updateProduct(productId: String): ServiceCall[ProductCreation, CreationProductDone]
 
   override final def descriptor = {
     import Service._
     // @formatter:off
     named("products")
       .withCalls(
-        restCall(Method.POST, "/api/products", createProduct),
-        restCall(Method.GET, "/api/products/:productId", createProduct),
+        // with products
+        restCall(Method.POST, "/api/products/", createProduct),
+        restCall(Method.GET, "/api/products/:productId", getProduct _),
         restCall(Method.PUT, "/api/products/:productId", updateProduct _),
         restCall(Method.POST, "/api/products/:productId/thumbnails", createProductThumbnails _),
-        restCall(Method.POST, "/api/products/:productId/thumbnails/:thumbId", deleteProductThumbnails _ _),
+        restCall(Method.POST, "/api/products/:productId/thumbnails/:thumbId", deleteProductThumbnails _),
         restCall(Method.POST, "/api/products/:productId/details", createProductDetails _),
-        restCall(Method.POST, "/api/products/:productId/details/:detailId", deleteProductDetails _ _),
-        restCall(Method.GET, "/api/products", findProductByCategory _),
+        restCall(Method.POST, "/api/products/:productId/details/:detailId", deleteProductDetails _),
+        //with categories
         restCall(Method.POST, "/api/categories/", createCategory),
         restCall(Method.GET, "/api/categories/", getCategories _)
       )
