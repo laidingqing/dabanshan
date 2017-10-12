@@ -1,5 +1,7 @@
 package com.dabanshan.products.impl.product
 
+import java.time.Instant
+
 import play.api.libs.json.{Format, Json}
 import com.dabanshan.commons.utils.JsonFormats._
 import com.dabanshan.product.api.model.ProductStatus
@@ -46,12 +48,10 @@ object Product {
 }
 
 object ProductState {
-  val empty = ProductState(None, created = false)
-  implicit val productFormat = Json.format[Product]
   implicit val format: Format[ProductState] = Json.format
 }
 
-final case class ProductState(product: Option[Product], created: Boolean) {
+final case class ProductState(product: Option[Product], timestamp: Instant = Instant.now()) {
 
   def withBody(body: Product): ProductState = {
     product match {

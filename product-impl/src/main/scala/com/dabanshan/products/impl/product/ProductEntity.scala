@@ -17,50 +17,36 @@ class ProductEntity extends PersistentEntity {
   override type Event = ProductEvent
   override type State = ProductState
 
-  override def initialState: ProductState = ProductState.empty
+  override def initialState: ProductState = ProductState(None)
 
   override def behavior: Behavior = {
-    case state if state.isEmpty => initial
-    case state if !state.isEmpty => productCreated
-  }
-
-
-  private val initial: Actions = {
-    Actions()
-      .onCommand[CreateProduct, CreationProductDone] {
+    case ProductState(maybe, _) => Actions().onCommand[CreateProduct, CreationProductDone] {
       case (CreateProduct(product), ctx, state) =>
         ctx.thenPersist(
           ProductCreated(product)
         ) { _ =>
           ctx.reply(CreationProductDone(id = entityId))
         }
+    }.onCommand[AddThumbnails , Done] {
+      case (AddThumbnails(ids), ctx, state) =>
+        ctx.thenPersist(ProductThumbnailsCreated(ids))(_ => ctx.reply(Done))
+    }.onReadOnlyCommand[GetProduct.type, GetProductDone] {
+      case (GetProduct, ctx, state) =>
+        ctx.reply(GetProductDone(
+          state.product.get.id,
+          state.product.get.name,
+          state.product.get.price,
+          state.product.get.unit,
+          state.product.get.category,
+          state.product.get.description,
+          state.product.get.status,
+          state.product.get.thumbnails,
+          state.product.get.details,
+          state.product.get.creator
+        ))
     }.onEvent {
-        case (ProductCreated(product), state) => ProductState(Some(product), created = true)
-      }
-  }
-
-  private val productCreated: Actions = {
-    Actions()
-      .onCommand[AddThumbnails , Done] {
-        case (AddThumbnails(ids), ctx, state) =>
-          ctx.thenPersist(ProductThumbnailsCreated(ids))(_ => ctx.reply(Done))
-      }.onEvent {
-        case (ProductThumbnailsCreated(ids), state) =>
-          ProductState(Some(state.product.get.appendThumbnails(ids)), created = true)
-      }.onReadOnlyCommand[GetProduct.type, GetProductDone] {
-        case (GetProduct, ctx, state) =>
-          ctx.reply(GetProductDone(
-            state.product.get.id,
-            state.product.get.name,
-            state.product.get.price,
-            state.product.get.unit,
-            state.product.get.category,
-            state.product.get.description,
-            state.product.get.status,
-            state.product.get.thumbnails,
-            state.product.get.details,
-            state.product.get.creator
-            ))
+      case (ProductCreated(product), state) => ProductState(Some(product))
+      case (ProductThumbnailsCreated(ids), state) => ProductState(Some(state.product.get.appendThumbnails(ids)))
     }
   }
 }

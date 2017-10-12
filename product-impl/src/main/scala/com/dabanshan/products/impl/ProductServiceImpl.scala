@@ -3,9 +3,10 @@ package com.dabanshan.products.impl
 import akka.{Done, NotUsed}
 import com.dabanshan.catalog.api.ProductService
 import com.dabanshan.commons.identity.Id
+import com.dabanshan.commons.utils.PaginatedSequence
 import com.dabanshan.product.api.model.ProductStatus
 import com.dabanshan.product.api.model.request.{CategoryCreation, ProductCreation}
-import com.dabanshan.product.api.model.response.{CreationCategoryDone, CreationProductDone, GetAllCategoryDone, GetProductDone}
+import com.dabanshan.product.api.model.response._
 import com.dabanshan.products.impl.category.CategoryCommand.{CreateCategory, GetAllCategory}
 import com.dabanshan.products.impl.category.CategoryEntity
 import com.dabanshan.products.impl.product.ProductCommand.{AddThumbnails, CreateProduct, GetProduct}
@@ -20,9 +21,10 @@ import scala.concurrent.ExecutionContext
   * Created by skylai on 2017/9/30.
   */
 class ProductServiceImpl (persistentEntityRegistry: PersistentEntityRegistry,
-                          userRepository: ProductRepository)(implicit ec: ExecutionContext) extends ProductService{
+                          productRepository: ProductRepository)(implicit ec: ExecutionContext) extends ProductService{
 
   val log: Logger = LoggerFactory.getLogger(getClass)
+  private val DefaultPageSize = 10
   /**
     * 创建商品
     *
@@ -77,6 +79,16 @@ class ProductServiceImpl (persistentEntityRegistry: PersistentEntityRegistry,
   }
 
 
+  /**
+    *
+    * @param id
+    * @param pageNo
+    * @param pageSize
+    * @return
+    */
+  override def getProductsForUser(id: String, pageNo: Option[Int], pageSize: Option[Int]): ServiceCall[NotUsed, PaginatedSequence[ProductSummary]] = ServiceCall { _ =>
+    productRepository.getProductsForUser(id, ProductStatus.Created, pageNo.getOrElse(0), pageSize.getOrElse(DefaultPageSize))
+  }
 
   /**
     * 添加商品缩略图

@@ -1,17 +1,12 @@
 package com.dabanshan.catalog.api
 
 import akka.{Done, NotUsed}
-import com.dabanshan.product.api.model._
+import com.dabanshan.commons.utils.PaginatedSequence
+import com.dabanshan.product.api.model.ProductStatus
 import com.dabanshan.product.api.model.request.{CategoryCreation, ProductCreation}
-import com.dabanshan.product.api.model.response.{CreationCategoryDone, CreationProductDone, GetAllCategoryDone, GetProductDone}
-import com.lightbend.lagom.scaladsl.api.Service._
-import com.lightbend.lagom.scaladsl.api.broker.Topic
-import com.lightbend.lagom.scaladsl.api.broker.kafka.{KafkaProperties, PartitionKeyStrategy}
+import com.dabanshan.product.api.model.response._
 import com.lightbend.lagom.scaladsl.api.transport.Method
 import com.lightbend.lagom.scaladsl.api.{CircuitBreaker, Service, ServiceCall}
-import play.api.libs.json.{Format, Json}
-
-import scala.collection.immutable
 
 object ProductService  {
   val TOPIC_NAME = "products"
@@ -86,6 +81,15 @@ trait ProductService extends Service {
     */
   def updateProduct(productId: String): ServiceCall[ProductCreation, CreationProductDone]
 
+  /**
+    *
+    * @param id
+    * @param pageNo
+    * @param pageSize
+    * @return
+    */
+  def getProductsForUser(id: String, pageNo: Option[Int], pageSize: Option[Int]): ServiceCall[NotUsed, PaginatedSequence[ProductSummary]]
+
   override final def descriptor = {
     import Service._
     // @formatter:off
@@ -93,6 +97,7 @@ trait ProductService extends Service {
       .withCalls(
         // with products
         restCall(Method.POST, "/api/products/", createProduct),
+        pathCall("/api/products/?creatorId&pageNo&pageSize", getProductsForUser _),
         restCall(Method.GET, "/api/products/:productId", getProduct _),
         restCall(Method.PUT, "/api/products/:productId", updateProduct _),
         restCall(Method.POST, "/api/products/:productId/thumbnails", createProductThumbnails _),

@@ -1,7 +1,10 @@
 package com.dabanshan.products.impl.product
 
 import akka.Done
-import com.datastax.driver.core.PreparedStatement
+import com.dabanshan.commons.utils.PaginatedSequence
+import com.dabanshan.product.api.model.ProductStatus
+import com.dabanshan.product.api.model.response.ProductSummary
+import com.datastax.driver.core.{PreparedStatement, Row}
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
 import com.lightbend.lagom.scaladsl.persistence.cassandra.{CassandraReadSide, CassandraSession}
 import org.slf4j.{Logger, LoggerFactory}
@@ -13,6 +16,64 @@ import scala.language.implicitConversions
   * Created by skylai on 2017/9/30.
   */
 class ProductRepository (session: CassandraSession)(implicit ec: ExecutionContext) {
+
+  /**
+    * 分页按状态及供应商查询
+    * @param creatorId 供应商编号
+    * @param status 状态
+    * @param page
+    * @param pageSize
+    * @return
+    */
+  def getProductsForUser(creatorId: String, status: ProductStatus.Status, page: Int, pageSize: Int): Future[PaginatedSequence[ProductSummary]] = {
+    val offset = page * pageSize
+    val limit = (page + 1) * pageSize
+    for {
+      count <- countProductsByCreatorInStatus(creatorId, status)
+      items <- if (offset > count) Future.successful(Nil)
+      else selectItemsByCreatorInStatus(creatorId, status, offset, limit)
+    } yield {
+      PaginatedSequence(items, page, pageSize, count)
+    }
+  }
+
+
+
+  private def countProductsByCreatorInStatus(creatorId: String, status: ProductStatus.Status) = {
+    session.selectOne("""
+      SELECT COUNT(*) FROM productSummaryByCreator
+      WHERE creatorId = ? AND status = ?
+      ORDER BY status ASC, itemId DESC
+                      """,
+      creatorId, status.toString).map {
+      case Some(row) => row.getLong("count").toInt
+      case None => 0
+    }
+  }
+
+  private def selectItemsByCreatorInStatus(creatorId: String, status: ProductStatus.Status, offset: Int, limit: Int) = {
+    session.selectAll("""
+      SELECT * FROM productSummaryByCreator
+      WHERE creatorId = ? AND status = ?
+      ORDER BY status ASC, itemId DESC
+      LIMIT ?
+                      """, creatorId, status.toString, Integer.valueOf(limit)).map { rows =>
+      rows.drop(offset)
+        .map(convertProductSummary)
+    }
+  }
+
+  private def convertProductSummary(item: Row): ProductSummary = {
+    ProductSummary(
+      item.getString("productId"),
+      item.getString("name"),
+      item.getDecimal("price"),
+      item.getString("unit"),
+      item.getString("category"),
+      item.getString("creatorId"),
+      ProductStatus.withName(item.getString("status"))
+    )
+  }
 
 }
 
