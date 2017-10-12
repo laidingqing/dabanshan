@@ -29,6 +29,9 @@ object ProductCommand {
     implicit val format: Format[UpdatePrice] = Json.format
   }
 
-
+  case class AddThumbnails(thumbnails: List[String]) extends ProductCommand[Done]
+  object AddThumbnails{
+    implicit val format: Format[AddThumbnails] = Json.format
+  }
 
 }

@@ -4,10 +4,10 @@ import akka.Done
 import com.datastax.driver.core.PreparedStatement
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
 import com.lightbend.lagom.scaladsl.persistence.cassandra.{CassandraReadSide, CassandraSession}
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.collection.immutable
 import scala.concurrent.{ExecutionContext, Future}
-
 import scala.language.implicitConversions
 /**
   * Created by skylai on 2017/9/30.
@@ -23,12 +23,16 @@ class ProductEventProcessor(session: CassandraSession, readSide: CassandraReadSi
   private var insertProductCreatorStatement: PreparedStatement = null
   private var insertProductSummaryStatement: PreparedStatement = null
   private var insertProductWithCategoryStatement: PreparedStatement = null
+  private var updateProductThumbnailsStatement: PreparedStatement = null
+
+  val log: Logger = LoggerFactory.getLogger(getClass)
 
   override def buildHandler =
     readSide.builder[ProductEvent]("productEventOffset")
       .setGlobalPrepare(createTables)
       .setPrepare(_ => prepareStatements())
       .setEventHandler[ProductCreated](e => insertProduct(e.event))
+      .setEventHandler[ProductThumbnailsCreated](e => updateThumbnails(e.entityId, e.event))
       .build
 
   override def aggregateTags = ProductEvent.Tag.allTags
@@ -42,6 +46,19 @@ class ProductEventProcessor(session: CassandraSession, readSide: CassandraReadSi
 
   private def insertProductCreator(product: Product) = {
     insertProductCreatorStatement.bind(product.id, product.creator)
+  }
+
+  private def updateThumbnails(productId:String, ptc: ProductThumbnailsCreated) = {
+    selectProductCreator(productId).map{
+      case None => throw new IllegalStateException("No Product found for productId " + productId)
+      case Some(row) =>
+        val creatorId = row.getString("creatorId")
+        log.info("=====creatorId:", creatorId)
+        log.info("=====productId:", productId)
+        log.info("=====thumbnails:", ptc.list)
+        List(updateProductThumbnailsStatement.bind(ptc.list, creatorId, productId))
+
+    }
   }
 
   private def insertProductSummaryByCreator(p: Product) = {
@@ -97,6 +114,10 @@ class ProductEventProcessor(session: CassandraSession, readSide: CassandraReadSi
     } yield Done
   }
 
+  private def selectProductCreator(productId: String) = {
+    session.selectOne("SELECT * FROM productCreator WHERE productId = ?", productId)
+  }
+
   private def prepareStatements() = {
     for {
       insertProductCreator <- session.prepare("""
@@ -124,13 +145,18 @@ class ProductEventProcessor(session: CassandraSession, readSide: CassandraReadSi
           |  productId,
           |  category
           |) VALUES (?, ?)
-        """.stripMargin
-      )
+        """.stripMargin)
+
+      updateProductThumbnails <- session.prepare(
+        """
+        | UPDATE productSummaryByCreator SET thumbnails = thumbnails + ? WHERE creatorId = ? AND productId = ?
+        """.stripMargin)
 
     } yield {
       insertProductCreatorStatement = insertProductCreator
       insertProductSummaryStatement = insertProductSummary
       insertProductWithCategoryStatement = insertProductWithCategory
+      updateProductThumbnailsStatement = updateProductThumbnails
       Done
     }
   }

@@ -20,3 +20,9 @@ case class ProductCreated(product: Product) extends ProductEvent
 object ProductCreated {
   implicit val format: Format[ProductCreated] = Json.format
 }
+
+case class ProductThumbnailsCreated(list: List[String]) extends ProductEvent
+
+object ProductThumbnailsCreated {
+  implicit val format: Format[ProductThumbnailsCreated] = Json.format
+}

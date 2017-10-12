@@ -54,7 +54,7 @@ trait ProductService extends Service {
     * @param productId
     * @return
     */
-  def createProductThumbnails(productId: String): ServiceCall[NotUsed, Done]
+  def createProductThumbnails(productId: String): ServiceCall[List[String], Done]
 
   /**
     * 添加商品详细图
@@ -91,6 +91,7 @@ trait ProductService extends Service {
     // @formatter:off
     named("products")
       .withCalls(
+        // with products
         restCall(Method.POST, "/api/products/", createProduct),
         restCall(Method.GET, "/api/products/:productId", getProduct _),
         restCall(Method.PUT, "/api/products/:productId", updateProduct _),
@@ -98,7 +99,7 @@ trait ProductService extends Service {
         restCall(Method.POST, "/api/products/:productId/thumbnails/:thumbId", deleteProductThumbnails _),
         restCall(Method.POST, "/api/products/:productId/details", createProductDetails _),
         restCall(Method.POST, "/api/products/:productId/details/:detailId", deleteProductDetails _),
-        //with category
+        //with categories
         restCall(Method.POST, "/api/categories/", createCategory),
         restCall(Method.GET, "/api/categories/", getCategories _)
       )

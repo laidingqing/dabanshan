@@ -1,13 +1,18 @@
 package com.dabanshan.products.impl.product
 
+import akka.Done
 import com.dabanshan.product.api.model.response.{CreationProductDone, GetProductDone}
-import com.dabanshan.products.impl.product.ProductCommand.{CreateProduct, GetProduct}
+import com.dabanshan.products.impl.product.ProductCommand.{AddThumbnails, CreateProduct, GetProduct}
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity
+import org.slf4j.{Logger, LoggerFactory}
 
 /**
   * Created by skylai on 2017/9/30.
   */
 class ProductEntity extends PersistentEntity {
+
+  val log: Logger = LoggerFactory.getLogger(getClass)
+
   override type Command = ProductCommand[_]
   override type Event = ProductEvent
   override type State = ProductState
@@ -24,30 +29,39 @@ class ProductEntity extends PersistentEntity {
     Actions()
       .onCommand[CreateProduct, CreationProductDone] {
       case (CreateProduct(product), ctx, state) =>
-        System.out.println(">>>>> this is ")
         ctx.thenPersist(
           ProductCreated(product)
         ) { _ =>
           ctx.reply(CreationProductDone(id = entityId))
         }
-
-    }
-      .onEvent {
-        case (ProductCreated(product), state) =>
-          ProductState(Some(product), created = true)
+    }.onEvent {
+        case (ProductCreated(product), state) => ProductState(Some(product), created = true)
       }
   }
 
   private val productCreated: Actions = {
     Actions()
-      .onReadOnlyCommand[GetProduct.type, GetProductDone] {
-      case (GetProduct, ctx, state) =>
-        ctx.reply(GetProductDone(
-          state.product.get.id,
-          state.product.get.name,
-          state.product.get.description,
-          state.product.get.price,
-          state.product.get.unit))
+      .onCommand[AddThumbnails , Done] {
+        case (AddThumbnails(thumbnails), ctx, state) =>
+          ctx.thenPersist(ProductThumbnailsCreated(thumbnails))(_ => ctx.reply(Done))
+      }.onEvent {
+        case (ProductThumbnailsCreated(_), state) =>
+          log.info("AddThumbnails Command send...")
+          ProductState(Some(state.product.get), created = true)
+      }.onReadOnlyCommand[GetProduct.type, GetProductDone] {
+        case (GetProduct, ctx, state) =>
+          ctx.reply(GetProductDone(
+            state.product.get.id,
+            state.product.get.name,
+            state.product.get.price,
+            state.product.get.unit,
+            state.product.get.category,
+            state.product.get.description,
+            state.product.get.status,
+            state.product.get.thumbnails,
+            state.product.get.details,
+            state.product.get.creator
+            ))
     }
   }
 }

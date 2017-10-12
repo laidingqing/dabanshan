@@ -2,17 +2,12 @@ package com.dabanshan.products.impl.product
 
 import play.api.libs.json.{Format, Json}
 import com.dabanshan.commons.utils.JsonFormats._
+import com.dabanshan.product.api.model.ProductStatus
 import play.api.data._
 import play.api.data.Forms._
 /**
   * Created by skylai on 2017/9/30.
   */
-object ProductStatus extends Enumeration {
-  val Created, Cancelled = Value
-  type Status = Value
-
-  implicit val format: Format[Status] = enumFormat(ProductStatus)
-}
 
 case class Product(
   id: String,
@@ -30,6 +25,18 @@ case class Product(
   def updatePrice(price: Double) = {
     copy(
       price = price
+    )
+  }
+
+  def appendThumbnails(thumbnails: List[String]) = {
+    copy(
+      thumbnails = Some(thumbnails)
+    )
+  }
+
+  def cancel = {
+    copy(
+      status = ProductStatus.Cancelled
     )
   }
 

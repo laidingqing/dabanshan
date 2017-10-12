@@ -1,9 +1,11 @@
 package com.dabanshan.products.impl
 
 import com.dabanshan.catalog.api.ProductService
-import com.dabanshan.commons.utils.{BigDecimalCodec}
+import com.dabanshan.commons.utils.BigDecimalCodec
 import com.dabanshan.products.impl.category.{CategoryEntity, CategoryEventProcessor, CategoryRepository}
 import com.dabanshan.products.impl.product._
+import com.datastax.driver.core.{DataType, TypeCodec}
+import com.datastax.driver.extras.codecs.arrays.ObjectArrayCodec
 import com.lightbend.lagom.scaladsl.api.ServiceLocator
 import com.lightbend.lagom.scaladsl.api.ServiceLocator.NoServiceLocator
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
@@ -44,10 +46,12 @@ trait ProductComponents
 
   lazy val productRepository = wire[ProductRepository]
   lazy val categoryRepository = wire[CategoryRepository]
+  val stringArrayCodec = new ObjectArrayCodec(DataType.list(DataType.varchar()), classOf[Array[String]], TypeCodec.varchar())
   for {
     underlying <- cassandraSession.underlying()
   } yield {
     underlying.getCluster.getConfiguration.getCodecRegistry.register(new BigDecimalCodec)
+    underlying.getCluster.getConfiguration.getCodecRegistry.register(stringArrayCodec)
   }
   persistentEntityRegistry.register(wire[ProductEntity])
   persistentEntityRegistry.register(wire[CategoryEntity])

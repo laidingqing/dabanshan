@@ -3,12 +3,13 @@ package com.dabanshan.products.impl
 import akka.{Done, NotUsed}
 import com.dabanshan.catalog.api.ProductService
 import com.dabanshan.commons.identity.Id
+import com.dabanshan.product.api.model.ProductStatus
 import com.dabanshan.product.api.model.request.{CategoryCreation, ProductCreation}
 import com.dabanshan.product.api.model.response.{CreationCategoryDone, CreationProductDone, GetAllCategoryDone, GetProductDone}
 import com.dabanshan.products.impl.category.CategoryCommand.{CreateCategory, GetAllCategory}
 import com.dabanshan.products.impl.category.CategoryEntity
-import com.dabanshan.products.impl.product.ProductCommand.CreateProduct
-import com.dabanshan.products.impl.product.{Product, ProductEntity, ProductRepository, ProductStatus}
+import com.dabanshan.products.impl.product.ProductCommand.{AddThumbnails, CreateProduct, GetProduct}
+import com.dabanshan.products.impl.product.{Product, ProductEntity, ProductRepository}
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntityRegistry
 import org.slf4j.{Logger, LoggerFactory}
@@ -28,7 +29,6 @@ class ProductServiceImpl (persistentEntityRegistry: PersistentEntityRegistry,
     * @return
     */
   override def createProduct: ServiceCall[ProductCreation, CreationProductDone] = ServiceCall { request =>
-    log.info("request :", request)
     val productId = Id().randomID.toString
     val ref = productEntityRef(productId)
     val pProduct = Product(productId, request.name, request.price, request.unit, request.category, request.description, ProductStatus.Created, request.thumbnails, request.details, request.creator)
@@ -71,7 +71,10 @@ class ProductServiceImpl (persistentEntityRegistry: PersistentEntityRegistry,
     *
     * @return
     */
-  override def getProduct(productId: String): ServiceCall[NotUsed, GetProductDone] = ???
+  override def getProduct(productId: String): ServiceCall[NotUsed, GetProductDone] = ServiceCall { _ =>
+    val ref = productEntityRef(productId)
+    ref.ask(GetProduct)
+  }
 
 
 
@@ -81,7 +84,10 @@ class ProductServiceImpl (persistentEntityRegistry: PersistentEntityRegistry,
     * @param productId
     * @return
     */
-  override def createProductThumbnails(productId: String): ServiceCall[NotUsed, Done] = ???
+  override def createProductThumbnails(productId: String): ServiceCall[List[String], Done] = ServiceCall { thumbnails =>
+    val ref = productEntityRef(productId)
+    ref.ask(AddThumbnails(thumbnails))
+  }
 
   /**
     * 删除缩略图

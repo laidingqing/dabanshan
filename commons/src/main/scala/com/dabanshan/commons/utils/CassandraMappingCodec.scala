@@ -2,6 +2,7 @@ package com.dabanshan.commons.utils
 
 import com.datastax.driver.core.{Session, TypeCodec}
 import com.datastax.driver.extras.codecs.MappingCodec
+import com.datastax.driver.extras.codecs.arrays.AbstractPrimitiveArrayCodec
 /**
   * Created by skylai on 2017/10/11.
   */
