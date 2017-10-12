@@ -84,9 +84,9 @@ class ProductServiceImpl (persistentEntityRegistry: PersistentEntityRegistry,
     * @param productId
     * @return
     */
-  override def createProductThumbnails(productId: String): ServiceCall[List[String], Done] = ServiceCall { thumbnails =>
+  override def createProductThumbnails(productId: String): ServiceCall[List[String], Done] = ServiceCall { request =>
     val ref = productEntityRef(productId)
-    ref.ask(AddThumbnails(thumbnails))
+    ref.ask(AddThumbnails(request))
   }
 
   /**

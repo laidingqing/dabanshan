@@ -42,12 +42,11 @@ class ProductEntity extends PersistentEntity {
   private val productCreated: Actions = {
     Actions()
       .onCommand[AddThumbnails , Done] {
-        case (AddThumbnails(thumbnails), ctx, state) =>
-          ctx.thenPersist(ProductThumbnailsCreated(thumbnails))(_ => ctx.reply(Done))
+        case (AddThumbnails(ids), ctx, state) =>
+          ctx.thenPersist(ProductThumbnailsCreated(ids))(_ => ctx.reply(Done))
       }.onEvent {
-        case (ProductThumbnailsCreated(_), state) =>
-          log.info("AddThumbnails Command send...")
-          ProductState(Some(state.product.get), created = true)
+        case (ProductThumbnailsCreated(ids), state) =>
+          ProductState(Some(state.product.get.appendThumbnails(ids)), created = true)
       }.onReadOnlyCommand[GetProduct.type, GetProductDone] {
         case (GetProduct, ctx, state) =>
           ctx.reply(GetProductDone(

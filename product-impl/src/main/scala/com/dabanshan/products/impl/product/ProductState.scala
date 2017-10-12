@@ -5,9 +5,7 @@ import com.dabanshan.commons.utils.JsonFormats._
 import com.dabanshan.product.api.model.ProductStatus
 import play.api.data._
 import play.api.data.Forms._
-/**
-  * Created by skylai on 2017/9/30.
-  */
+
 
 case class Product(
   id: String,
@@ -28,9 +26,10 @@ case class Product(
     )
   }
 
-  def appendThumbnails(thumbnails: List[String]) = {
+  def appendThumbnails(ids: List[String]) = {
+    var thumbs  = thumbnails.getOrElse(List()) ::: ids
     copy(
-      thumbnails = Some(thumbnails)
+      thumbnails = Some(thumbs)
     )
   }
 

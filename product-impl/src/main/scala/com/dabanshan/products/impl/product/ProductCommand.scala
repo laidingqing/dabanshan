@@ -25,11 +25,13 @@ object ProductCommand {
   case object GetProduct extends ProductCommand[GetProductDone]
   //更新价格命令
   case class UpdatePrice(price: BigDecimal) extends ProductCommand[Done]
+
   object UpdatePrice {
     implicit val format: Format[UpdatePrice] = Json.format
   }
 
-  case class AddThumbnails(thumbnails: List[String]) extends ProductCommand[Done]
+  case class AddThumbnails(ids: List[String]) extends ProductCommand[Done]
+
   object AddThumbnails{
     implicit val format: Format[AddThumbnails] = Json.format
   }

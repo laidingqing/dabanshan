@@ -53,10 +53,8 @@ class ProductEventProcessor(session: CassandraSession, readSide: CassandraReadSi
       case None => throw new IllegalStateException("No Product found for productId " + productId)
       case Some(row) =>
         val creatorId = row.getString("creatorId")
-        log.info("=====creatorId:", creatorId)
-        log.info("=====productId:", productId)
-        log.info("=====thumbnails:", ptc.list)
-        List(updateProductThumbnailsStatement.bind(ptc.list, creatorId, productId))
+        log.info("thumbnails ids: " + ptc.ids)
+        List(updateProductThumbnailsStatement.bind(ptc.ids, creatorId, productId))
 
     }
   }

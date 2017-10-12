@@ -50,7 +50,7 @@ trait ProductService extends Service {
   def findProductByCategory(categoryId: String): ServiceCall[NotUsed, GetProductDone]
 
   /**
-    * 添加商品缩略图
+    * 添加一张商品缩略图
     * @param productId
     * @return
     */
