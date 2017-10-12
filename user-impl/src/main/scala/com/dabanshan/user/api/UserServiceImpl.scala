@@ -7,7 +7,7 @@ import com.dabanshan.catalog.api.UserService
 import com.dabanshan.commons.identity.Id
 import com.dabanshan.commons.response.{GeneratedIdDone, TokenContent}
 import com.dabanshan.commons.utils.SecurePasswordHashing
-import com.dabanshan.user.api.UserCommand.{CreateUser, GetUser}
+import com.dabanshan.user.api.UserCommand.{CreateTenant, CreateUser, GetUser}
 import com.dabanshan.user.api.model.request._
 import com.dabanshan.user.api.model.response._
 import com.lightbend.lagom.scaladsl.api.ServiceCall
@@ -107,7 +107,10 @@ override def updateTenant(userId: String, tenantId: String): ServiceCall[TenantU
     * @param userId
     * @return
     */
-  override def createTenant(userId: String): ServiceCall[TenantCreation, CreationTenantDone] = ???
+  override def createTenant(userId: String): ServiceCall[TenantCreation, CreationTenantDone] = ServiceCall{ request =>
+    val ref = persistentEntityRegistry.refFor[UserEntity](userId)
+    ref.ask(CreateTenant(Tenant(request.name, userId, request.address, request.phone, request.province, request.city, request.county)))
+  }
 
   /**
     * 增加租户资质信息

@@ -7,6 +7,15 @@ import play.api.libs.json.{Format, Json}
 /**
   * Created by skylai on 2017/9/4.
   */
+case class Tenant(
+   name: String,
+   userId: String,
+   address: Option[String],
+   phone: Option[String],
+   province: Option[String],
+   city: Option[String],
+   county: Option[String]
+ )
 case class User(
                  userId: String,
                  firstName: String,
@@ -20,12 +29,11 @@ object User {
 }
 
 object UserState {
-  val empty = UserState(None, created = false)
   implicit val userFormat = Json.format[User]
   implicit val format: Format[UserState] = Json.format
 }
 
-final case class UserState(user: Option[User], created: Boolean) {
+final case class UserState(user: Option[User], timestamp: Instant = Instant.now()) {
 
   def withBody(body: User): UserState = {
     user match {

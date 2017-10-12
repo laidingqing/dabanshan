@@ -1,7 +1,7 @@
 package com.dabanshan.user.api
 
 import com.dabanshan.commons.response.GeneratedIdDone
-import com.dabanshan.user.api.model.response.{CreationUserDone, GetUserDone}
+import com.dabanshan.user.api.model.response.{CreationTenantDone, CreationUserDone, GetUserDone}
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.ReplyType
 import play.api.libs.json.{Format, Json}
 import com.dabanshan.commons.utils.JsonFormats._
@@ -21,6 +21,7 @@ object UserCommand {
   val serializers = Vector(
     JsonSerializer(Json.format[CreateUser]),
     JsonSerializer(Json.format[CreationUserDone]),
+    JsonSerializer(Json.format[CreateTenant]),
     JsonSerializer(emptySingletonFormat(GetUser)))
 
   case class CreateUser(
@@ -32,5 +33,8 @@ object UserCommand {
                        ) extends UserCommand[CreationUserDone]
 
   case object GetUser extends UserCommand[GetUserDone]
+
+  case class CreateTenant(tenant: Tenant) extends UserCommand[CreationTenantDone]
+
 
 }
