@@ -22,7 +22,7 @@ object UserCreated {
   implicit val format: Format[UserCreated] = Json.format
 }
 
-case class TenantCreated(id: String) extends UserEvent
+case class TenantCreated(tenant: Tenant) extends UserEvent
 
 object TenantCreated {
   implicit val format: Format[TenantCreated] = Json.format

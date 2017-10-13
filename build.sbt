@@ -12,7 +12,7 @@ val jwt = "com.pauldijou" %% "jwt-play-json" % "0.12.1"
 val cassandraDriverExtras = "com.datastax.cassandra" % "cassandra-driver-extras" % "3.1.2"
 
 lazy val root = (project in file("."))
-  .aggregate(webGateway, commons, userApi, userImpl, productApi, productImpl, balanceApi, cookbookApi)
+  .aggregate(frontEnd, commons, userApi, userImpl, productApi, productImpl, balanceApi, cookbookApi)
 
 lazy val commons = (project in file("commons"))
   .settings(commonSettings: _*)
@@ -89,21 +89,25 @@ lazy val cookbookApi = (project in file("cookbook-api"))
     )
   )
 
-lazy val webGateway = (project in file("web-gateway"))
-  .enablePlugins(PlayScala, LagomPlay)
+lazy val frontEnd = (project in file("front-end"))
+  .enablePlugins(PlayJava, LagomPlay)
   .dependsOn(userApi)
   .settings(
     routesGenerator := InjectedRoutesGenerator,
+    pipelineStages := Seq(rjs, digest, gzip),
     libraryDependencies ++= Seq(
-      "org.webjars" % "react" % "0.14.3",
-      "org.webjars" % "react-router" % "1.0.3",
-      "org.webjars" % "foundation" % "5.3.0"
+      // WebJars
+      "org.webjars" % "requirejs" % "2.3.2",
+      "org.webjars" % "underscorejs" % "1.8.3",
+      "org.webjars" % "jquery" % "1.12.4",
+      "org.webjars" % "bootstrap" % "3.3.7-1" exclude("org.webjars", "jquery"),
+      "org.webjars" % "angularjs" % "1.4.10" exclude("org.webjars", "jquery")
     )
   )
 
 lagomCassandraEnabled in ThisBuild := false
 lagomUnmanagedServices in ThisBuild := Map("cas_native" -> "http://localhost:9042")
-
+lagomServiceLocatorEnabled in ThisBuild := true
 
 def commonSettings: Seq[Setting[_]] = Seq(
 )

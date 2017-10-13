@@ -14,7 +14,9 @@ case class Tenant(
    phone: Option[String],
    province: Option[String],
    city: Option[String],
-   county: Option[String]
+   county: Option[String],
+   description: Option[String],
+   status:
  )
 case class User(
                  userId: String,

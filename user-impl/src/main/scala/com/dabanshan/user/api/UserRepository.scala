@@ -31,6 +31,28 @@ class UserRepository (session: CassandraSession)(implicit ec: ExecutionContext) 
     result
   }
 
+  /**
+    * 查询用户关联的供应商信息
+    * @param userId
+    * @return
+    */
+  def findTenantByUser(userId: String): Future[Option[Tenant]] = {
+    val result = session.selectOne("SELECT userId, name, phone, address, province, city, county, description FROM tenant_by_user WHERE userId = ?", userId).map {
+      case Some(row) => Option(Tenant(
+        userId = row.getString("userId"),
+        name = row.getString("name"),
+        phone = Option(row.getString("phone")),
+        address = Option(row.getString("address")),
+        province = Option(row.getString("province")),
+        city = Option(row.getString("city")),
+        county = Option(row.getString("county")),
+        description = Option(row.getString("description"))
+      ))
+      case None => Option.empty
+    }
+    result
+  }
+
 
 
 }
@@ -39,19 +61,33 @@ class UserEventProcessor(session: CassandraSession, readSide: CassandraReadSide)
   extends ReadSideProcessor[UserEvent]
 {
   private var insertUserForEmailStatement: PreparedStatement = null
+  private var insertUserForTenantStatement: PreparedStatement = null
 
   override def buildHandler =
     readSide.builder[UserEvent]("userEventOffset")
       .setGlobalPrepare(createTables)
       .setPrepare(_ => prepareStatements())
       .setEventHandler[UserCreated](e => insertUser(e.event))
+      .setEventHandler[TenantCreated](e => insertTenant(e.event))
       .build
 
-  override def aggregateTags =
-    UserEvent.Tag.allTags
+  override def aggregateTags = UserEvent.Tag.allTags
 
   private def insertUser(user: UserCreated) = {
     Future.successful(immutable.Seq(insertUserForEmailStatement.bind(user.userId, user.username, user.email, user.firstName, user.lastName, user.hashedPassword)))
+  }
+
+  private def insertTenant(tenantEvent: TenantCreated) = {
+    Future.successful(immutable.Seq(insertUserForTenantStatement.bind(
+      tenantEvent.tenant.userId,
+      tenantEvent.tenant.name,
+      tenantEvent.tenant.address,
+      tenantEvent.tenant.phone,
+      tenantEvent.tenant.province,
+      tenantEvent.tenant.city,
+      tenantEvent.tenant.county,
+      tenantEvent.tenant.description
+    )))
   }
 
   private def createTables() = {
@@ -66,6 +102,22 @@ class UserEventProcessor(session: CassandraSession, readSide: CassandraReadSide)
           |  last_name text,
           |  hashed_password text
           |  )
+        """.stripMargin)
+
+      _ <- session.executeCreateTable(
+        """
+          |CREATE TABLE IF NOT EXISTS tenant_by_user (
+          |  userId text,
+          |  name text,
+          |  address text,
+          |  phone text,
+          |  province text,
+          |  city text,
+          |  county text,
+          |  description text,
+          |  status,
+          |  PRIMARY KEY (userId)
+          |  )WITH CLUSTERING ORDER BY (userId DESC)
         """.stripMargin)
     } yield Done
   }
@@ -83,8 +135,23 @@ class UserEventProcessor(session: CassandraSession, readSide: CassandraReadSide)
           |  hashed_password
           |) VALUES (?, ?, ?, ?, ?, ?)
         """.stripMargin)
+
+      insertUserForTenant <- session.prepare(
+        """
+          |INSERT INTO tenant_by_user(
+          |  userId,
+          |  name,
+          |  address,
+          |  phone,
+          |  province,
+          |  city,
+          |  county,
+          |  status
+          |) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """.stripMargin)
     } yield {
       insertUserForEmailStatement = insertUserForEmail
+      insertUserForTenantStatement = insertUserForTenant
       Done
     }
   }

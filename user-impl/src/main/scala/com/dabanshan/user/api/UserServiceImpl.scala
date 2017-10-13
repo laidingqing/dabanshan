@@ -11,7 +11,7 @@ import com.dabanshan.user.api.UserCommand.{CreateTenant, CreateUser, GetUser}
 import com.dabanshan.user.api.model.request._
 import com.dabanshan.user.api.model.response._
 import com.lightbend.lagom.scaladsl.api.ServiceCall
-import com.lightbend.lagom.scaladsl.api.transport.Forbidden
+import com.lightbend.lagom.scaladsl.api.transport.{BadRequest, Forbidden}
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntityRegistry
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -108,10 +108,26 @@ override def updateTenant(userId: String, tenantId: String): ServiceCall[TenantU
     * @return
     */
   override def createTenant(userId: String): ServiceCall[TenantCreation, CreationTenantDone] = ServiceCall{ request =>
-    val ref = persistentEntityRegistry.refFor[UserEntity](userId)
-    ref.ask(CreateTenant(Tenant(request.name, userId, request.address, request.phone, request.province, request.city, request.county)))
+    def executeAddTenat = () => {
+      val ref = persistentEntityRegistry.refFor[UserEntity](userId)
+      val tenant = Tenant(request.name, userId, request.address, request.phone, request.province, request.city, request.county, request.description)
+      ref.ask(
+        CreateTenant(tenant)
+      )
+    }
+    reserveUserAndTenant(userId, executeAddTenat)
   }
 
+  private def reserveUserAndTenant[B](userId: String, onSuccess: () => Future[B]): Future[B] = {
+    val canProceed = for {
+      tenantReserved <- userRepository.findTenantByUser(userId)
+    }yield (tenantReserved)
+
+    canProceed match{
+      case Some(maybe) => throw BadRequest("Either tenant is already taken.")
+      case None => onSuccess.apply()
+    }
+  }
   /**
     * 增加租户资质信息
     *

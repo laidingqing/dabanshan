@@ -79,10 +79,10 @@ trait UserService extends Service {
         restCall(Method.POST, "/api/users/login", loginUser _),
 
         // with tenants api
-        restCall(Method.GET, "/api/users/:userId/tenants/:tenantId", getTenant _ _),
+        restCall(Method.GET, "/api/users/:userId/tenants/:tenantId", getTenant _),
         restCall(Method.POST, "/api/users/:userId/tenants/", createTenant _),
-        restCall(Method.PUT, "/api/users/:userId/tenants/:tenantId", updateTenant _ _),
-        restCall(Method.POST, "/api/users/:userId/tenants/:tenantId/credentials", addTenantCredentials _ _)
+        restCall(Method.PUT, "/api/users/:userId/tenants/:tenantId", updateTenant _),
+        restCall(Method.POST, "/api/users/:userId/tenants/:tenantId/credentials", addTenantCredentials _)
       )
       .withAutoAcl(true)
       .withCircuitBreaker(CircuitBreaker.PerNode)

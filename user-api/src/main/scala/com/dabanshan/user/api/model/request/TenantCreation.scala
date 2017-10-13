@@ -13,7 +13,8 @@ case class TenantCreation(
        phone: Option[String],
        province: Option[String],
        city: Option[String],
-       county: Option[String]
+       county: Option[String],
+       description: Option[String]
 )
 
 object TenantCreation {
