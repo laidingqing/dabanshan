@@ -1,1 +1,23 @@
 /* app css stylesheet */
+
+/* */
+#body .row{
+    margin-right: 0;
+    margin-left: 0;
+}
+.bd-navbar{
+    background: #F6323E;
+    min-height: 53px;
+    margin-bottom: 0;
+    border-radius: 0px;
+}
+.bd-navbar a{
+    color: #fff;
+}
+
+.main-bg{
+    padding: 0px 0px 20px 0px;
+    background: url(/images/bc4799568c1194e701984a4bdfa27443.jpg) no-repeat #D1DCE2;
+    background-position: 100% bottom;
+    background-size: auto 100%
+}

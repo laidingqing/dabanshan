@@ -36,7 +36,10 @@ require(['angular', './controllers', './directives', './filters', './services', 
   function(angular, controllers) {
     angular.module('app', ['app.filters', 'app.services', 'app.directives', 'ngRoute'])
         .config(['$routeProvider', function($routeProvider) {
-            $routeProvider.otherwise({redirectTo: '/'});
+            $routeProvider.when('/login', {templateUrl: 'partials/login.html', controller: controllers.LoginCtrl});
+            $routeProvider.when('/main', {templateUrl: 'partials/main.html', controller: controllers.MainCtrl})
+            $routeProvider.when('/explore', {templateUrl: 'partials/explore.html', controller: controllers.ExploreCtrl})
+            $routeProvider.otherwise({redirectTo: '/main'});
         }])
         .controller('mainController', ['$scope','$rootScope','$q','$location',
             function($scope, $rootScope, $q, $location){
