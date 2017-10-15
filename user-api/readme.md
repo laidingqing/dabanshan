@@ -33,4 +33,60 @@
 }
 ```
 
+**Response Body**
+
+```json
+{
+  "id": "9bdfe4d3ef23"
+}
+```
+
+### User Login
+
+**URL**
+
+`POST http://localhost:9000/api/users/login`
+
+**Request Headers**
+
+`无`
+
+**Request Body**
+
+```json
+{
+	"username": "String",
+	"password": "String"
+}
+```
+** Response Body**
+```json
+{
+    "id": "String",
+    "username": "String",
+	"authToken": "String",
+	"refreshToken": "String"
+}
+```
+
+### User Create Tenant
+
+**URL**
+
+`POST /api/users/:userId/tenants/`
+
+**Request Body**
+
+```json
+{
+  "name": "String", //名称
+  "userId": "String",//用户编号
+  "address": "Option[String]",//地址
+  "phone": "Option[String]",//电话
+  "province": "Option[String]",//省
+  "city": "Option[String]",//市
+  "county": "Option[String]",//县
+  "description": "Option[String]"//描述
+}
+```
 

@@ -1,9 +1,10 @@
 package com.dabanshan.user.api
 
 import akka.Done
+import com.dabanshan.user.api.model.TenantStatus
 
 import scala.concurrent.ExecutionContext
-import com.datastax.driver.core.PreparedStatement
+import com.datastax.driver.core.{PreparedStatement, TypeCodec}
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
 import com.lightbend.lagom.scaladsl.persistence.cassandra.{CassandraReadSide, CassandraSession}
 
@@ -38,7 +39,7 @@ class UserRepository (session: CassandraSession)(implicit ec: ExecutionContext) 
     */
   def findTenantByUser(userId: String): Future[Option[Tenant]] = {
     val result = session.selectOne("SELECT userId, name, phone, address, province, city, county, description FROM tenant_by_user WHERE userId = ?", userId).map {
-      case Some(row) => Option(Tenant(
+      case Some(row) => Some(Tenant(
         userId = row.getString("userId"),
         name = row.getString("name"),
         phone = Option(row.getString("phone")),
@@ -46,9 +47,11 @@ class UserRepository (session: CassandraSession)(implicit ec: ExecutionContext) 
         province = Option(row.getString("province")),
         city = Option(row.getString("city")),
         county = Option(row.getString("county")),
-        description = Option(row.getString("description"))
+        description = Option(row.getString("description")),
+        credentials = None,//TODO convert row values.
+        status = TenantStatus.withName(row.getString("status"))
       ))
-      case None => Option.empty
+      case None => None
     }
     result
   }
@@ -86,7 +89,9 @@ class UserEventProcessor(session: CassandraSession, readSide: CassandraReadSide)
       tenantEvent.tenant.province,
       tenantEvent.tenant.city,
       tenantEvent.tenant.county,
-      tenantEvent.tenant.description
+      tenantEvent.tenant.description,
+      tenantEvent.tenant.credentials,
+      tenantEvent.tenant.status
     )))
   }
 
@@ -115,6 +120,7 @@ class UserEventProcessor(session: CassandraSession, readSide: CassandraReadSide)
           |  city text,
           |  county text,
           |  description text,
+          |  credentials list<text>,
           |  status,
           |  PRIMARY KEY (userId)
           |  )WITH CLUSTERING ORDER BY (userId DESC)
@@ -146,8 +152,9 @@ class UserEventProcessor(session: CassandraSession, readSide: CassandraReadSide)
           |  province,
           |  city,
           |  county,
+          |  credentials,
           |  status
-          |) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+          |) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """.stripMargin)
     } yield {
       insertUserForEmailStatement = insertUserForEmail

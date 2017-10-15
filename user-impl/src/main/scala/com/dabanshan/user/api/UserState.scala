@@ -2,6 +2,7 @@ package com.dabanshan.user.api
 
 import java.time.Instant
 
+import com.dabanshan.user.api.model.TenantStatus
 import play.api.libs.json.{Format, Json}
 
 /**
@@ -16,7 +17,8 @@ case class Tenant(
    city: Option[String],
    county: Option[String],
    description: Option[String],
-   status:
+   credentials: Option[List[String]],
+   status: TenantStatus.Status
  )
 case class User(
                  userId: String,
