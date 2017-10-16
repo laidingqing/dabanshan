@@ -7,14 +7,19 @@
         <link rel="stylesheet" href="@routes.Assets.versioned("css/app.css")" />
     </head>
     <body id="body" ng-controller="mainController">
-        <header class="navbar navbar-expand navbar-dark flex-column flex-md-row bd-navbar">
-            <a class="navbar-brand mr-0 mr-md-2" href="#/login" aria-label="Bootstrap">
-                家有料
-            </a>
-
-            <a class="" href="#">登录</a>
+        <header class="masthead clearfix">
+            <h3>
+                <a class="masthead-brand" href="#/login" aria-label="Bootstrap">家有料 - 家乡的味道</a>
+            </h3>
+            <nav class="nav nav-masthead">
+                <a class="nav-link active" href="#">首页</a>
+                <a class="nav-link" href="#">采购</a>
+                <a class="nav-link" href="javascript:void(0)" ng-click="login('40%')">登录</a>
+            </nav>
         </header>
-        <div ng-view></div>
+        <div class="container-fluid">
+            <div ng-view></div>
+        </div>
         <script data-main="@routes.Assets.versioned("js/main.js")" src="@routes.Assets.versioned("lib/requirejs/require.js")"></script>
     </body>
 </html>

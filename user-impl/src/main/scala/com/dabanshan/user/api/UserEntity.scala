@@ -7,7 +7,6 @@ import com.dabanshan.commons.identity.Id
 import com.dabanshan.commons.response.GeneratedIdDone
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEvent, AggregateEventTag, PersistentEntity}
 import com.dabanshan.user.api._
-import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.{Actions, ReplyType}
 import play.api.libs.json.{Format, Json}
 import com.dabanshan.commons.utils.JsonFormats._
 import com.dabanshan.commons.utils.SecurePasswordHashing
@@ -44,7 +43,7 @@ class UserEntity extends PersistentEntity {
         }
     }.onCommand[CreateTenant, CreationTenantDone]{
       case (CreateTenant(tenant), ctx, state) =>
-        ctx.thenPersist(TenantCreated("")){_=> ctx.reply(CreationTenantDone(""))} //todo
+        ctx.thenPersist(TenantCreated(tenant)){_=> ctx.reply(CreationTenantDone(""))} //todo
     }.onReadOnlyCommand[GetUser.type, GetUserDone] {
       case (GetUser, ctx, state) =>
         ctx.reply(GetUserDone(

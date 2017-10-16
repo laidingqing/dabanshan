@@ -4,10 +4,20 @@
 
 define(function() {
     var controllers = {};
-    controllers.LoginCtrl = function($scope, $rootScope, Config, UserService) {
 
+    controllers.LoginCtrl = function($scope, $rootScope, $uibModalInstance, Config, UserService) {
+        $scope.ok = function () {
+            console.log($scope.info);
+            $uibModalInstance.close(true);
+        };
+        $scope.cancel = function () {
+            $uibModalInstance.dismiss(0);
+        };
+        $scope.login = function() {
+            alert("this is login form.")
+        }
     }
-    controllers.LoginCtrl.$inject = ['$scope', '$rootScope', 'Config','UserService'];
+    controllers.LoginCtrl.$inject = ['$scope', '$rootScope', '$uibModalInstance', 'Config','UserService'];
 
     controllers.MainCtrl = function($scope, $rootScope, Config) {
 

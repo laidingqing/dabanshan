@@ -101,6 +101,7 @@ lazy val frontEnd = (project in file("front-end"))
       "org.webjars" % "underscorejs" % "1.8.3",
       "org.webjars" % "jquery" % "1.12.4",
       "org.webjars" % "bootstrap" % "3.3.7-1" exclude("org.webjars", "jquery"),
+      "org.webjars" % "angular-ui-bootstrap" % "1.3.3",
       "org.webjars" % "angularjs" % "1.4.10" exclude("org.webjars", "jquery"),
       "org.webjars" % "angular-material" % "1.0.0-rc1"
     )

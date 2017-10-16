@@ -20,6 +20,10 @@ case class Tenant(
    credentials: Option[List[String]],
    status: TenantStatus.Status
  )
+
+object Tenant {
+  implicit val format: Format[Tenant] = Json.format
+}
 case class User(
                  userId: String,
                  firstName: String,
