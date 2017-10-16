@@ -1,6 +1,6 @@
 package com.dabanshan.user.api
 
-import com.dabanshan.catalog.api.{UserService}
+import com.dabanshan.catalog.api.UserService
 import com.lightbend.lagom.scaladsl.api.ServiceLocator
 import com.lightbend.lagom.scaladsl.api.ServiceLocator.NoServiceLocator
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
@@ -9,6 +9,8 @@ import com.lightbend.lagom.scaladsl.server._
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.Environment
 import com.softwaremill.macwire._
+import play.api.mvc.EssentialFilter
+import play.filters.cors.CORSComponents
 
 import scala.concurrent.ExecutionContext
 /**
@@ -50,5 +52,7 @@ abstract class UserApplication(context: LagomApplicationContext)
   extends LagomApplication(context)
     with UserComponents
     with AhcWSComponents
+    with CORSComponents
 {
+  override lazy val httpFilters: Seq[EssentialFilter] = Seq(corsFilter)
 }

@@ -2,6 +2,7 @@ package com.dabanshan.catalog.api
 
 import akka.{Done, NotUsed}
 import com.dabanshan.commons.response.GeneratedIdDone
+import com.dabanshan.commons.secutiry.CorsFilter
 import com.dabanshan.user.api._
 import com.dabanshan.user.api.model.request.{TenantCreation, TenantUpdation, UserCreation, UserLogin}
 import com.dabanshan.user.api.model.response._
@@ -85,6 +86,7 @@ trait UserService extends Service {
         restCall(Method.POST, "/api/users/:userId/tenants/:tenantId/credentials", addTenantCredentials _)
       )
       .withAutoAcl(true)
+      .withHeaderFilter(new CorsFilter)
       .withCircuitBreaker(CircuitBreaker.PerNode)
     // @formatter:on
   }

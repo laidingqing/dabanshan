@@ -36,7 +36,8 @@ requirejs.config({
 require(['angular', './controllers', './directives', './filters', './services', 'angular-route','angular-animate', 'angular-aria', 'ui-bootstrap-tpls'],
   function(angular, controllers) {
     angular.module('app', ['app.filters', 'app.services', 'app.directives', 'ngRoute', 'ui.bootstrap'])
-        .config(['$routeProvider', function($routeProvider) {
+        .config(['$routeProvider', '$httpProvider', function($routeProvider, $httpProvider) {
+            $httpProvider.defaults.headers.common['Access-Control-Allow-Origin'] = '*';
             $routeProvider.when('/main', {templateUrl: 'partials/main.html', controller: controllers.MainCtrl})
             $routeProvider.when('/explore', {templateUrl: 'partials/explore.html', controller: controllers.ExploreCtrl})
             $routeProvider.otherwise({redirectTo: '/main'});

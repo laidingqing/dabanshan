@@ -46,7 +46,8 @@ lazy val userImpl = (project in file("user-impl"))
       lagomScaladslKafkaBroker,
       lagomScaladslTestKit,
       macwire,
-      scalaTest
+      scalaTest,
+      filters
     )
   )
   .settings(lagomForkedTestSettings: _*)
@@ -67,8 +68,8 @@ lazy val productImpl = (project in file("product-impl"))
       lagomScaladslKafkaBroker,
       lagomScaladslTestKit,
       macwire,
-      scalaTest
-
+      scalaTest,
+      filters
     )
   )
   .settings(lagomForkedTestSettings: _*)
@@ -106,7 +107,7 @@ lazy val frontEnd = (project in file("front-end"))
       "org.webjars" % "angular-material" % "1.0.0-rc1"
     )
   )
-
+lagomServiceGatewayPort in ThisBuild := 9010
 lagomCassandraEnabled in ThisBuild := false
 lagomUnmanagedServices in ThisBuild := Map("cas_native" -> "http://localhost:9042")
 lagomServiceLocatorEnabled in ThisBuild := true

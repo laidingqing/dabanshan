@@ -4,7 +4,7 @@ define(['angular'], function(angular) {
 angular.module('app.services', [])
   .factory('Config', [function() {
     var Config = {
-        url : "http://localhost:9000/api/"
+        url : "http://localhost:9010/api/"
     };
     return Config;
   }])
@@ -49,8 +49,18 @@ angular.module('app.services', [])
             getUserOBJ : function() {
                 return $this.userOBJ;
             },
-            logIn : function(inputUsername, inputPassword, callback) {
+            login : function(inputUsername, inputPassword, callback) {
+                var jsonObject = angular.toJson({"username" : inputUsername, "password" : inputPassword});
+                $http.post(Config.url + this.type + '/login', jsonObject ,{'Content-Type': 'application/x-www-form-urlencoded'})
+                  .then(function successCallback(response) {
+                    User.setUsername(response.data.userId);
+                    User.setPassword(response.data.password);
+                    User.storeUserLocally(response.data);
 
+                    callback(response.status);
+                  }, function errorCallback(response) {
+                    callback(response.data.detail);
+                });
             },
             register : function(inputUsername, inputPassword, callback) {
 

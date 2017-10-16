@@ -121,9 +121,9 @@ class UserEventProcessor(session: CassandraSession, readSide: CassandraReadSide)
           |  county text,
           |  description text,
           |  credentials list<text>,
-          |  status,
+          |  status text,
           |  PRIMARY KEY (userId)
-          |  )WITH CLUSTERING ORDER BY (userId DESC)
+          |  )
         """.stripMargin)
     } yield Done
   }
@@ -152,6 +152,7 @@ class UserEventProcessor(session: CassandraSession, readSide: CassandraReadSide)
           |  province,
           |  city,
           |  county,
+          |  description,
           |  credentials,
           |  status
           |) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)

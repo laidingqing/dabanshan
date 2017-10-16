@@ -15,6 +15,8 @@ import com.lightbend.lagom.scaladsl.server.{LagomApplication, LagomApplicationCo
 import com.softwaremill.macwire._
 import play.api.Environment
 import play.api.libs.ws.ahc.AhcWSComponents
+import play.api.mvc.EssentialFilter
+import play.filters.cors.CORSComponents
 
 import scala.concurrent.ExecutionContext
 
@@ -70,5 +72,7 @@ abstract class ProductApplication(context: LagomApplicationContext)
   extends LagomApplication(context)
     with ProductComponents
     with AhcWSComponents
+    with CORSComponents
 {
+  override lazy val httpFilters: Seq[EssentialFilter] = Seq(corsFilter)
 }

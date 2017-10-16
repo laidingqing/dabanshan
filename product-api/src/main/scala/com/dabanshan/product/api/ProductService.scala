@@ -1,6 +1,7 @@
 package com.dabanshan.catalog.api
 
 import akka.{Done, NotUsed}
+import com.dabanshan.commons.secutiry.CorsFilter
 import com.dabanshan.commons.utils.PaginatedSequence
 import com.dabanshan.product.api.model.ProductStatus
 import com.dabanshan.product.api.model.request.{CategoryCreation, ProductCreation}
@@ -109,6 +110,7 @@ trait ProductService extends Service {
         restCall(Method.GET, "/api/categories/", getCategories _)
       )
       .withAutoAcl(true)
+      .withHeaderFilter(new CorsFilter)
       .withCircuitBreaker(CircuitBreaker.PerNode)
     // @formatter:on
   }

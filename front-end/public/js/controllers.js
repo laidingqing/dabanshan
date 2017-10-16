@@ -14,7 +14,9 @@ define(function() {
             $uibModalInstance.dismiss(0);
         };
         $scope.login = function() {
-            alert("this is login form.")
+            UserService.login($scope.username, $scope.password, function(status){
+                alert(status)
+            })
         }
     }
     controllers.LoginCtrl.$inject = ['$scope', '$rootScope', '$uibModalInstance', 'Config','UserService'];
